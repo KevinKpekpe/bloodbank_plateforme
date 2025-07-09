@@ -34,6 +34,10 @@
                         </svg>
                         Trouver une banque
                     </a>
+                    <a href="{{ route('geolocation.index') }}" class="bg-white/20 backdrop-blur-sm text-white hover:bg-white hover:text-red-600 font-semibold rounded-lg transition-colors inline-flex items-center text-lg px-8 py-4">
+                        <i class="fas fa-map-marker-alt mr-2"></i>
+                        Carte Interactive
+                    </a>
                     <a href="{{ route('register') }}" class="bg-white text-red-600 hover:bg-red-50 font-semibold rounded-lg transition-colors inline-flex items-center text-lg px-8 py-4">
                         <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -129,6 +133,84 @@
                     Suivez l'impact de votre don et recevez des notifications
                     sur l'utilisation de votre sang.
                 </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Géolocalisation Section -->
+<section class="py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <!-- Content -->
+            <div>
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                    Carte Interactive des Banques de Sang
+                </h2>
+                <p class="text-xl text-gray-600 mb-8">
+                    Trouvez instantanément la banque de sang la plus proche de votre position.
+                    Notre carte interactive vous permet de :
+                </p>
+
+                <div class="space-y-4 mb-8">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-search text-red-600 text-sm"></i>
+                        </div>
+                        <span class="text-gray-700">Rechercher par nom ou adresse</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-location-arrow text-red-600 text-sm"></i>
+                        </div>
+                        <span class="text-gray-700">Géolocalisation automatique</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-route text-red-600 text-sm"></i>
+                        </div>
+                        <span class="text-gray-700">Obtenir l'itinéraire</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-phone text-red-600 text-sm"></i>
+                        </div>
+                        <span class="text-gray-700">Contacter directement</span>
+                    </div>
+                </div>
+
+                <a href="{{ route('geolocation.index') }}"
+                   class="inline-flex items-center bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors">
+                    <i class="fas fa-map-marker-alt mr-3"></i>
+                    Voir la Carte Interactive
+                </a>
+            </div>
+
+            <!-- Map Preview -->
+            <div class="relative">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="p-6 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900">Aperçu de la Carte</h3>
+                        <p class="text-sm text-gray-600">{{ \App\Models\Bank::count() }} banques de sang disponibles</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="bg-gray-100 rounded-lg h-64 flex items-center justify-center">
+                            <div class="text-center">
+                                <i class="fas fa-map-marker-alt text-red-500 text-4xl mb-4"></i>
+                                <p class="text-gray-600">Carte interactive avec géolocalisation</p>
+                                <p class="text-sm text-gray-500 mt-2">Cliquez pour explorer</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Floating Stats -->
+                <div class="absolute -top-4 -right-4 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold">{{ \App\Models\Bank::where('status', 'active')->count() }}</div>
+                        <div class="text-xs">Banques Actives</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

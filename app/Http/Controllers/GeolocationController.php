@@ -25,28 +25,35 @@ class GeolocationController extends Controller
      */
     public function nearby(Request $request)
     {
-        $request->validate([
-            'latitude' => 'required|numeric|between:-90,90',
-            'longitude' => 'required|numeric|between:-180,180',
-            'radius' => 'nullable|numeric|min:1|max:50' // rayon en km
-        ]);
+        try {
+            $request->validate([
+                'latitude' => 'required|numeric|between:-90,90',
+                'longitude' => 'required|numeric|between:-180,180',
+                'radius' => 'nullable|numeric|min:1|max:50' // rayon en km
+            ]);
 
-        $latitude = $request->latitude;
-        $longitude = $request->longitude;
-        $radius = $request->radius ?? 10; // 10km par défaut
+            $latitude = $request->latitude;
+            $longitude = $request->longitude;
+            $radius = $request->radius ?? 10; // 10km par défaut
 
-        // Formule de Haversine pour calculer la distance
-        $banks = Bank::where('status', 'active')
-            ->whereNotNull('latitude')
-            ->whereNotNull('longitude')
-            ->selectRaw('*,
-                (6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance',
-                [$latitude, $longitude, $latitude])
-            ->having('distance', '<=', $radius)
-            ->orderBy('distance')
-            ->get();
+            // Formule de Haversine pour calculer la distance - compatible SQLite
+            $banks = Bank::where('status', 'active')
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->selectRaw('*,
+                    (6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance',
+                    [$latitude, $longitude, $latitude])
+                ->get()
+                ->filter(function($bank) use ($radius) {
+                    return $bank->distance <= $radius;
+                })
+                ->sortBy('distance')
+                ->values();
 
-        return response()->json($banks);
+            return response()->json($banks);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -91,22 +98,26 @@ class GeolocationController extends Controller
      */
     public function search(Request $request)
     {
-        $request->validate([
-            'query' => 'required|string|min:2'
-        ]);
+        try {
+            $request->validate([
+                'query' => 'required|string|min:2'
+            ]);
 
-        $query = $request->query;
+            $query = $request->query('query');
 
-        $banks = Bank::where('status', 'active')
-            ->whereNotNull('latitude')
-            ->whereNotNull('longitude')
-            ->where(function($q) use ($query) {
-                $q->where('name', 'like', "%{$query}%")
-                  ->orWhere('address', 'like', "%{$query}%");
-            })
-            ->get();
+            $banks = Bank::where('status', 'active')
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->where(function($q) use ($query) {
+                    $q->where('name', 'like', "%{$query}%")
+                      ->orWhere('address', 'like', "%{$query}%");
+                })
+                ->get();
 
-        return response()->json($banks);
+            return response()->json($banks);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -126,4 +137,4 @@ class GeolocationController extends Controller
 
         return response()->json($stats);
     }
-} 
+}

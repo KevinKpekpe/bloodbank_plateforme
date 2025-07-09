@@ -1,124 +1,262 @@
 @extends('layouts.app')
 
-@section('title', 'Accueil - BloodLink')
-@section('description', 'Plateforme de gestion et géolocalisation des banques de sang à Kinshasa')
+@section('title', 'BloodLink - Sauvez des vies, donnez votre sang')
+@section('description', 'Plateforme de dons de sang connectant donneurs, médecins et banques de sang pour sauver des vies.')
+
+@push('styles')
+<style>
+    .hero-pattern {
+        background-image: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+        background-size: 20px 20px;
+    }
+
+    .animate-pulse-red {
+        animation: pulse-red 3s infinite;
+    }
+
+    @keyframes pulse-red {
+        0%, 100% {
+            opacity: 0.1;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.3;
+            transform: scale(1.1);
+        }
+    }
+</style>
+@endpush
 
 @section('content')
-<div class="bg-white">
-    <!-- Hero Section -->
-    <div class="relative bg-gradient-to-r from-red-600 to-red-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-            <div class="text-center">
-                <h1 class="text-4xl font-extrabold text-white sm:text-5xl md:text-6xl">
-                    BloodLink
+<!-- Hero Section -->
+<section class="relative bg-gradient-to-br from-red-600 to-red-700 text-white overflow-hidden">
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 hero-pattern opacity-10"></div>
+
+    <!-- Floating Elements -->
+    <div class="absolute top-20 left-10 w-20 h-20 bg-white/10 rounded-full animate-pulse-red"></div>
+    <div class="absolute top-40 right-20 w-16 h-16 bg-white/10 rounded-full animate-pulse-red" style="animation-delay: 1s;"></div>
+    <div class="absolute bottom-20 left-1/4 w-12 h-12 bg-white/10 rounded-full animate-pulse-red" style="animation-delay: 2s;"></div>
+
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <!-- Content -->
+            <div class="text-center lg:text-left">
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
+                    Sauvez des vies,
+                    <span class="block text-red-200">donnez votre sang</span>
                 </h1>
-                <p class="mt-6 max-w-2xl mx-auto text-xl text-red-100">
-                    Plateforme de gestion et géolocalisation des banques de sang à Kinshasa
+                <p class="text-xl md:text-2xl text-red-100 mb-8 leading-relaxed">
+                    BloodLink connecte donneurs, médecins et banques de sang pour faciliter les dons et sauver des vies.
+                    Votre don peut faire la différence.
                 </p>
-                <div class="mt-10 flex justify-center space-x-4">
-                    @guest
-                        <a href="{{ route('register') }}" class="bg-white text-red-600 px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors">
-                            Devenir Donneur
-                        </a>
-                        <a href="{{ route('login') }}" class="border-2 border-white text-white px-8 py-3 rounded-lg font-medium hover:bg-white hover:text-red-600 transition-colors">
-                            Se Connecter
-                        </a>
-                    @else
-                        @if(Auth::user()->role === 'superadmin')
-                            <a href="{{ route('superadmin.dashboard') }}" class="bg-white text-red-600 px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors">
-                                Dashboard Super Admin
-                            </a>
-                        @elseif(Auth::user()->role === 'admin_banque')
-                            <a href="{{ route('admin.dashboard') }}" class="bg-white text-red-600 px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors">
-                                Dashboard Admin
-                            </a>
-                        @else
-                            <a href="{{ route('donor.dashboard') }}" class="bg-white text-red-600 px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors">
-                                Mon Dashboard
-                            </a>
-                        @endif
-                    @endguest
+                <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                    <a href="{{ route('blood-banks') }}" class="border-2 border-white text-white hover:bg-white hover:text-red-600 font-semibold rounded-lg transition-colors inline-flex items-center text-lg px-8 py-4">
+                        <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        Trouver une banque
+                    </a>
+                    <a href="{{ route('geolocation.index') }}" class="bg-white/20 backdrop-blur-sm text-white hover:bg-white hover:text-red-600 font-semibold rounded-lg transition-colors inline-flex items-center text-lg px-8 py-4">
+                        <i class="fas fa-map-marker-alt mr-2"></i>
+                        Carte Interactive
+                    </a>
+                    <a href="{{ route('register') }}" class="bg-white text-red-600 hover:bg-red-50 font-semibold rounded-lg transition-colors inline-flex items-center text-lg px-8 py-4">
+                        <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        Devenir donneur
+                    </a>
+                </div>
+            </div>
+
+            <!-- Hero Image/Illustration -->
+            <div class="relative">
+                <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+                    <div class="text-center">
+                        <div class="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4">Impact immédiat</h3>
+                        <div class="grid grid-cols-3 gap-4 text-center">
+                            <div>
+                                <div class="text-3xl font-bold text-red-200">{{ \App\Models\Bank::count() }}+</div>
+                                <div class="text-sm text-red-100">Banques partenaires</div>
+                            </div>
+                            <div>
+                                <div class="text-3xl font-bold text-red-200">10k+</div>
+                                <div class="text-sm text-red-100">Vies sauvées</div>
+                            </div>
+                            <div>
+                                <div class="text-3xl font-bold text-red-200">24h</div>
+                                <div class="text-sm text-red-100">Réponse rapide</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+</section>
 
-    <!-- Features Section -->
-    <div class="py-16 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center">
-                <h2 class="text-3xl font-extrabold text-gray-900">
-                    Fonctionnalités Principales
-                </h2>
-                <p class="mt-4 text-lg text-gray-600">
-                    Découvrez comment BloodLink facilite la gestion des dons de sang
+<!-- Features Section -->
+<section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Pourquoi choisir BloodLink ?
+            </h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Une plateforme complète qui simplifie le processus de don de sang
+                et connecte tous les acteurs du système de santé.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Feature 1 -->
+            <div class="bg-white rounded-lg shadow-lg p-8 text-center">
+                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Géolocalisation précise</h3>
+                <p class="text-gray-600">
+                    Trouvez rapidement la banque de sang la plus proche de chez vous
+                    avec notre système de géolocalisation avancé.
                 </p>
             </div>
 
-            <div class="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                <!-- Feature 1 -->
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
-                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Géolocalisation</h3>
-                    <p class="text-gray-600">Trouvez facilement les banques de sang les plus proches de chez vous.</p>
+            <!-- Feature 2 -->
+            <div class="bg-white rounded-lg shadow-lg p-8 text-center">
+                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
                 </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Rendez-vous en ligne</h3>
+                <p class="text-gray-600">
+                    Prenez rendez-vous pour votre don de sang en quelques clics.
+                    Plus besoin d'appeler ou de se déplacer.
+                </p>
+            </div>
 
-                <!-- Feature 2 -->
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
-                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Gestion des Stocks</h3>
-                    <p class="text-gray-600">Suivez en temps réel les stocks de sang disponibles dans chaque banque.</p>
+            <!-- Feature 3 -->
+            <div class="bg-white rounded-lg shadow-lg p-8 text-center">
+                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
                 </div>
-
-                <!-- Feature 3 -->
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
-                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a4 4 0 118 0v4m-4 6v6m-4-6h8m-8 6h8" />
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Rendez-vous</h3>
-                    <p class="text-gray-600">Prenez rendez-vous facilement pour vos dons de sang.</p>
-                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Suivi en temps réel</h3>
+                <p class="text-gray-600">
+                    Suivez l'impact de votre don et recevez des notifications
+                    sur l'utilisation de votre sang.
+                </p>
             </div>
         </div>
     </div>
+</section>
 
-    <!-- Stats Section -->
-    @if(isset($totalBanks) && isset($totalStocks))
-    <div class="py-16 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center">
-                <h2 class="text-3xl font-extrabold text-gray-900">
-                    Statistiques
+<!-- Géolocalisation Section -->
+<section class="py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <!-- Content -->
+            <div>
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                    Carte Interactive des Banques de Sang
                 </h2>
+                <p class="text-xl text-gray-600 mb-8">
+                    Trouvez instantanément la banque de sang la plus proche de votre position.
+                    Notre carte interactive vous permet de :
+                </p>
+
+                <div class="space-y-4 mb-8">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-search text-red-600 text-sm"></i>
+                        </div>
+                        <span class="text-gray-700">Rechercher par nom ou adresse</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-location-arrow text-red-600 text-sm"></i>
+                        </div>
+                        <span class="text-gray-700">Géolocalisation automatique</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-route text-red-600 text-sm"></i>
+                        </div>
+                        <span class="text-gray-700">Obtenir l'itinéraire</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-phone text-red-600 text-sm"></i>
+                        </div>
+                        <span class="text-gray-700">Contacter directement</span>
+                    </div>
+                </div>
+
+                <a href="{{ route('geolocation.index') }}"
+                   class="inline-flex items-center bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors">
+                    <i class="fas fa-map-marker-alt mr-3"></i>
+                    Voir la Carte Interactive
+                </a>
             </div>
 
-            <div class="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                <div class="text-center">
-                    <div class="text-4xl font-bold text-red-600">{{ $totalBanks }}</div>
-                    <div class="text-lg text-gray-600">Banques de Sang</div>
+            <!-- Map Preview -->
+            <div class="relative">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="p-6 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900">Aperçu de la Carte</h3>
+                        <p class="text-sm text-gray-600">{{ \App\Models\Bank::count() }} banques de sang disponibles</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="bg-gray-100 rounded-lg h-64 flex items-center justify-center">
+                            <div class="text-center">
+                                <i class="fas fa-map-marker-alt text-red-500 text-4xl mb-4"></i>
+                                <p class="text-gray-600">Carte interactive avec géolocalisation</p>
+                                <p class="text-sm text-gray-500 mt-2">Cliquez pour explorer</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="text-center">
-                    <div class="text-4xl font-bold text-red-600">{{ $totalStocks }}</div>
-                    <div class="text-lg text-gray-600">Unités de Sang</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-4xl font-bold text-red-600">24/7</div>
-                    <div class="text-lg text-gray-600">Disponibilité</div>
+
+                <!-- Floating Stats -->
+                <div class="absolute -top-4 -right-4 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold">{{ \App\Models\Bank::where('status', 'active')->count() }}</div>
+                        <div class="text-xs">Banques Actives</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    @endif
-</div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Prêt à sauver des vies ?
+        </h2>
+        <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            Rejoignez notre communauté de donneurs et faites la différence dès aujourd'hui.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{{ route('register') }}" class="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors">
+                Commencer maintenant
+            </a>
+            <a href="{{ route('about') }}" class="border border-gray-300 text-gray-700 hover:bg-gray-50 px-8 py-4 rounded-lg font-semibold text-lg transition-colors">
+                En savoir plus
+            </a>
+        </div>
+    </div>
+</section>
 @endsection
