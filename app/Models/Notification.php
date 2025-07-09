@@ -11,22 +11,20 @@ class Notification extends Model
 
     protected $fillable = [
         'user_id',
-        'donor_id',
-        'bank_id',
-        'type',
         'title',
         'message',
-        'is_read',
+        'type',
         'read_at',
+        'data'
     ];
 
     protected $casts = [
-        'is_read' => 'boolean',
         'read_at' => 'datetime',
+        'data' => 'array'
     ];
 
     /**
-     * Get the user for this notification.
+     * Relation avec l'utilisateur
      */
     public function user()
     {
@@ -34,40 +32,100 @@ class Notification extends Model
     }
 
     /**
-     * Get the donor for this notification.
+     * Scope pour les notifications non lues
      */
-    public function donor()
+    public function scopeUnread($query)
     {
-        return $this->belongsTo(Donor::class);
+        return $query->whereNull('read_at');
     }
 
     /**
-     * Get the bank for this notification.
+     * Scope pour les notifications lues
      */
-    public function bank()
+    public function scopeRead($query)
     {
-        return $this->belongsTo(Bank::class);
+        return $query->whereNotNull('read_at');
     }
 
     /**
-     * Mark notification as read.
+     * Marquer comme lue
      */
-    public function markAsRead(): void
+    public function markAsRead()
     {
-        $this->update([
-            'is_read' => true,
-            'read_at' => now(),
+        $this->update(['read_at' => now()]);
+    }
+
+    /**
+     * Marquer comme non lue
+     */
+    public function markAsUnread()
+    {
+        $this->update(['read_at' => null]);
+    }
+
+    /**
+     * Vérifier si la notification est lue
+     */
+    public function isRead()
+    {
+        return !is_null($this->read_at);
+    }
+
+    /**
+     * Vérifier si la notification est non lue
+     */
+    public function isUnread()
+    {
+        return is_null($this->read_at);
+    }
+
+    /**
+     * Créer une notification pour un utilisateur
+     */
+    public static function createForUser($userId, $title, $message, $type = 'info', $data = [])
+    {
+        return self::create([
+            'user_id' => $userId,
+            'title' => $title,
+            'message' => $message,
+            'type' => $type,
+            'data' => $data
         ]);
     }
 
     /**
-     * Mark notification as unread.
+     * Créer une notification pour tous les utilisateurs d'une banque
      */
-    public function markAsUnread(): void
+    public static function createForBank($bankId, $title, $message, $type = 'info', $data = [])
     {
-        $this->update([
-            'is_read' => false,
-            'read_at' => null,
-        ]);
+        $users = User::where('bank_id', $bankId)->pluck('id');
+
+        foreach ($users as $userId) {
+            self::createForUser($userId, $title, $message, $type, $data);
+        }
+    }
+
+    /**
+     * Créer une notification pour tous les donneurs
+     */
+    public static function createForAllDonors($title, $message, $type = 'info', $data = [])
+    {
+        $users = User::where('role', 'donor')->pluck('id');
+
+        foreach ($users as $userId) {
+            self::createForUser($userId, $title, $message, $type, $data);
+        }
+    }
+
+    /**
+     * Créer une notification pour tous les administrateurs
+     */
+    public static function createForAllAdmins($title, $message, $type = 'info', $data = [])
+    {
+        $users = User::where('role', 'admin')->pluck('id');
+
+        foreach ($users as $userId) {
+            self::createForUser($userId, $title, $message, $type, $data);
+        }
     }
 }

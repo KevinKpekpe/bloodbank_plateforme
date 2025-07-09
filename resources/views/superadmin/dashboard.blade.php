@@ -1,132 +1,143 @@
-@extends('layouts.admin')
+@extends('layouts.superadmin')
 
 @section('title', 'Dashboard Super Admin - BloodLink')
 @section('description', 'Tableau de bord super administrateur')
-@section('page-title', 'Dashboard Super Administrateur')
+@section('page-title', 'Dashboard')
 
 @section('content')
-<div class="mb-8">
-    <p class="text-gray-600">Bienvenue, {{ Auth::user()->name }} !</p>
-</div>
-
-@php
-    $totalBanks = \App\Models\Bank::count();
-    $totalUsers = \App\Models\User::count();
-    $totalDonors = \App\Models\Donor::count();
-    $totalStocks = \App\Models\BloodStock::sum('quantity');
-@endphp
-
-<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-    <div class="bg-white p-6 rounded-lg shadow-md">
-        <div class="flex items-center">
-            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Statistiques globales -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-hospital text-red-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Banques de Sang</h3>
+                    <p class="text-2xl font-bold text-red-600">{{ \App\Models\Bank::count() }}</p>
+                </div>
             </div>
-            <div class="ml-4">
-                <h3 class="text-lg font-semibold text-gray-900">Banques de Sang</h3>
-                <p class="text-2xl font-bold text-blue-600">{{ $totalBanks }}</p>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-users text-blue-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Utilisateurs</h3>
+                    <p class="text-2xl font-bold text-blue-600">{{ \App\Models\User::count() }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-calendar-check text-green-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Rendez-vous</h3>
+                    <p class="text-2xl font-bold text-green-600">{{ \App\Models\Appointment::count() }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-tint text-purple-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Dons</h3>
+                    <p class="text-2xl font-bold text-purple-600">{{ \App\Models\Donation::count() }}</p>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="bg-white p-6 rounded-lg shadow-md">
-        <div class="flex items-center">
-            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                </svg>
-            </div>
-            <div class="ml-4">
-                <h3 class="text-lg font-semibold text-gray-900">Utilisateurs</h3>
-                <p class="text-2xl font-bold text-green-600">{{ $totalUsers }}</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="bg-white p-6 rounded-lg shadow-md">
-        <div class="flex items-center">
-            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-            </div>
-            <div class="ml-4">
-                <h3 class="text-lg font-semibold text-gray-900">Donneurs</h3>
-                <p class="text-2xl font-bold text-red-600">{{ $totalDonors }}</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="bg-white p-6 rounded-lg shadow-md">
-        <div class="flex items-center">
-            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-            </div>
-            <div class="ml-4">
-                <h3 class="text-lg font-semibold text-gray-900">Stocks Totaux</h3>
-                <p class="text-2xl font-bold text-purple-600">{{ $totalStocks }}</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-    <!-- Banques récentes -->
-    <div class="bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4">Banques Récentes</h2>
-        @php
-            $recentBanks = \App\Models\Bank::latest()->take(5)->get();
-        @endphp
-        @if($recentBanks->count() > 0)
-            <div class="space-y-3">
-                @foreach($recentBanks as $bank)
-                    <div class="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Banques les plus actives -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Banques les Plus Actives</h2>
+            <div class="space-y-4">
+                @foreach(\App\Models\Bank::withCount(['appointments', 'donations'])->orderBy('appointments_count', 'desc')->limit(5)->get() as $bank)
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                         <div>
                             <h3 class="font-medium text-gray-900">{{ $bank->name }}</h3>
-                            <p class="text-sm text-gray-600">{{ $bank->address }}</p>
+                            <p class="text-sm text-gray-500">{{ $bank->address }}</p>
                         </div>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            {{ $bank->status }}
-                        </span>
+                        <div class="text-right">
+                            <p class="text-sm font-medium text-gray-900">{{ $bank->appointments_count }} RDV</p>
+                            <p class="text-sm text-gray-500">{{ $bank->donations_count }} dons</p>
+                        </div>
                     </div>
                 @endforeach
             </div>
-        @else
-            <p class="text-gray-500">Aucune banque enregistrée</p>
-        @endif
+        </div>
+
+        <!-- Statistiques par rôle -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Utilisateurs par Rôle</h2>
+            <div class="space-y-4">
+                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-user text-blue-600 mr-3"></i>
+                        <span class="font-medium">Donneurs</span>
+                    </div>
+                    <span class="text-lg font-bold text-blue-600">{{ \App\Models\User::where('role', 'donor')->count() }}</span>
+                </div>
+
+                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-user-shield text-green-600 mr-3"></i>
+                        <span class="font-medium">Administrateurs</span>
+                    </div>
+                    <span class="text-lg font-bold text-green-600">{{ \App\Models\User::where('role', 'admin')->count() }}</span>
+                </div>
+
+                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-crown text-red-600 mr-3"></i>
+                        <span class="font-medium">Super Admins</span>
+                    </div>
+                    <span class="text-lg font-bold text-red-600">{{ \App\Models\User::where('role', 'superadmin')->count() }}</span>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Utilisateurs par rôle -->
-    <div class="bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4">Utilisateurs par Rôle</h2>
-        @php
-            $usersByRole = \App\Models\User::selectRaw('role, count(*) as count')->groupBy('role')->get();
-        @endphp
-        <div class="space-y-3">
-            @foreach($usersByRole as $role)
-                <div class="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
-                    <span class="font-medium text-gray-900">
-                        @switch($role->role)
-                            @case('superadmin')
-                                Super Administrateur
-                                @break
-                            @case('admin_banque')
-                                Administrateur Banque
-                                @break
-                            @case('donor')
-                                Donneur
-                                @break
-                            @default
-                                {{ ucfirst($role->role) }}
-                        @endswitch
-                    </span>
-                    <span class="text-lg font-bold text-blue-600">{{ $role->count }}</span>
+    <!-- Actions rapides -->
+    <div class="mt-8 bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Actions Rapides</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="{{ route('superadmin.banks.create') }}"
+               class="flex items-center p-4 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors">
+                <i class="fas fa-plus text-red-600 mr-3"></i>
+                <div>
+                    <h3 class="font-medium text-red-900">Ajouter une Banque</h3>
+                    <p class="text-sm text-red-600">Créer une nouvelle banque de sang</p>
                 </div>
-            @endforeach
+            </a>
+
+            <a href="{{ route('superadmin.users.create') }}"
+               class="flex items-center p-4 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors">
+                <i class="fas fa-user-plus text-blue-600 mr-3"></i>
+                <div>
+                    <h3 class="font-medium text-blue-900">Ajouter un Utilisateur</h3>
+                    <p class="text-sm text-blue-600">Créer un nouveau compte</p>
+                </div>
+            </a>
+
+            <a href="{{ route('superadmin.banks.index') }}"
+               class="flex items-center p-4 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors">
+                <i class="fas fa-chart-bar text-green-600 mr-3"></i>
+                <div>
+                    <h3 class="font-medium text-green-900">Voir les Statistiques</h3>
+                    <p class="text-sm text-green-600">Analyser les performances</p>
+                </div>
+            </a>
         </div>
     </div>
 </div>

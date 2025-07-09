@@ -12,6 +12,11 @@ use App\Http\Controllers\Donor\AppointmentController;
 use App\Http\Controllers\Donor\DonationController;
 use App\Http\Controllers\Admin\AppointmentController as AdminAppointmentController;
 use App\Http\Controllers\Admin\DonationController as AdminDonationController;
+use App\Http\Controllers\SuperAdmin\BankController;
+use App\Http\Controllers\SuperAdmin\UserController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\GeolocationController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -27,6 +32,31 @@ Route::post('/contact', [ContactController::class, 'store'])->name('contact.stor
 Route::get('/partnership', [PartnershipController::class, 'index'])->name('partnership');
 Route::post('/partnership', [PartnershipController::class, 'store'])->name('partnership.store');
 Route::get('/blood-banks', [BloodBankController::class, 'index'])->name('blood-banks');
+
+// Routes de géolocalisation (publiques)
+Route::get('/map', [GeolocationController::class, 'index'])->name('geolocation.index');
+Route::get('/geolocation/nearby', [GeolocationController::class, 'nearby'])->name('geolocation.nearby');
+Route::get('/geolocation/all-banks', [GeolocationController::class, 'allBanks'])->name('geolocation.all-banks');
+Route::get('/geolocation/bank/{bank}', [GeolocationController::class, 'bankDetails'])->name('geolocation.bank-details');
+Route::get('/geolocation/search', [GeolocationController::class, 'search'])->name('geolocation.search');
+Route::get('/geolocation/statistics', [GeolocationController::class, 'statistics'])->name('geolocation.statistics');
+
+/*
+|--------------------------------------------------------------------------
+| Routes des Rapports (Accessibles aux Super Admins)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'superadmin'])->prefix('reports')->name('reports.')->group(function () {
+    Route::get('/', [ReportController::class, 'index'])->name('index');
+    Route::get('/general', [ReportController::class, 'general'])->name('general');
+    Route::get('/banks', [ReportController::class, 'banks'])->name('banks');
+    Route::get('/blood-types', [ReportController::class, 'bloodTypes'])->name('blood-types');
+    Route::get('/appointments', [ReportController::class, 'appointments'])->name('appointments');
+    Route::get('/donations', [ReportController::class, 'donations'])->name('donations');
+    Route::get('/users', [ReportController::class, 'users'])->name('users');
+    Route::post('/export', [ReportController::class, 'export'])->name('export');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -45,6 +75,14 @@ Route::middleware('guest')->group(function () {
 // Route de déconnexion (accessible aux utilisateurs connectés)
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+    // Routes pour les notifications
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{notification}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
+    Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-as-read');
+    Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread-count');
+    Route::get('/notifications/latest', [NotificationController::class, 'latest'])->name('notifications.latest');
 });
 
 /*
@@ -119,18 +157,20 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 */
 
 Route::middleware(['auth', 'superadmin'])->prefix('superadmin')->name('superadmin.')->group(function () {
+    // Dashboard
     Route::get('/dashboard', function () {
         return view('superadmin.dashboard');
     })->name('dashboard');
 
-    Route::get('/banks', function () {
-        return view('superadmin.banks');
-    })->name('banks');
+    // Gestion des banques de sang
+    Route::resource('banks', BankController::class);
+    Route::get('/banks/{bank}/statistics', [BankController::class, 'statistics'])->name('banks.statistics');
 
-    Route::get('/users', function () {
-        return view('superadmin.users');
-    })->name('users');
+    // Gestion des utilisateurs
+    Route::resource('users', UserController::class);
+    Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
 
+    // Gestion des partenariats
     Route::get('/partnerships', function () {
         return view('superadmin.partnerships');
     })->name('partnerships');
