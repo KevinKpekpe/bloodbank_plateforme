@@ -21,6 +21,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'phone_number',
     ];
 
     /**
@@ -44,5 +46,61 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Get the donor associated with the user.
+     */
+    public function donor()
+    {
+        return $this->hasOne(Donor::class);
+    }
+
+    /**
+     * Get the bank admins for the user.
+     */
+    public function bankAdmins()
+    {
+        return $this->hasMany(BankAdmin::class);
+    }
+
+    /**
+     * Get the banks that the user administers.
+     */
+    public function banks()
+    {
+        return $this->belongsToMany(Bank::class, 'bank_admins');
+    }
+
+    /**
+     * Get the notifications for the user.
+     */
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    /**
+     * Check if user is a donor.
+     */
+    public function isDonor(): bool
+    {
+        return $this->role === 'donor';
+    }
+
+    /**
+     * Check if user is a bank admin.
+     */
+    public function isBankAdmin(): bool
+    {
+        return $this->role === 'admin_banque';
+    }
+
+    /**
+     * Check if user is a super admin.
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'superadmin';
     }
 }
