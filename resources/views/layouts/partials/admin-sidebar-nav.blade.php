@@ -17,18 +17,18 @@
     <!-- Super Admin Menu -->
 
     <!-- Banques de Sang -->
-    <a href="{{ route('superadmin.banks') }}"
-       class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ $currentRoute === 'superadmin.banks' ? 'bg-red-100 text-red-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
-        <svg class="mr-3 h-6 w-6 {{ $currentRoute === 'superadmin.banks' ? 'text-red-500' : 'text-gray-400 group-hover:text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <a href="{{ route('superadmin.banks.index') }}"
+       class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ str_starts_with($currentRoute, 'superadmin.banks') ? 'bg-red-100 text-red-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+        <svg class="mr-3 h-6 w-6 {{ str_starts_with($currentRoute, 'superadmin.banks') ? 'text-red-500' : 'text-gray-400 group-hover:text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
         </svg>
         Banques de Sang
     </a>
 
     <!-- Utilisateurs -->
-    <a href="{{ route('superadmin.users') }}"
-       class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ $currentRoute === 'superadmin.users' ? 'bg-red-100 text-red-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
-        <svg class="mr-3 h-6 w-6 {{ $currentRoute === 'superadmin.users' ? 'text-red-500' : 'text-gray-400 group-hover:text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <a href="{{ route('superadmin.users.index') }}"
+       class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ str_starts_with($currentRoute, 'superadmin.users') ? 'bg-red-100 text-red-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+        <svg class="mr-3 h-6 w-6 {{ str_starts_with($currentRoute, 'superadmin.users') ? 'text-red-500' : 'text-gray-400 group-hover:text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
         </svg>
         Utilisateurs
@@ -47,27 +47,27 @@
     <!-- Admin Banque Menu -->
 
     <!-- Rendez-vous -->
-    <a href="{{ route('admin.appointments') }}"
-       class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ $currentRoute === 'admin.appointments' ? 'bg-red-100 text-red-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
-        <svg class="mr-3 h-6 w-6 {{ $currentRoute === 'admin.appointments' ? 'text-red-500' : 'text-gray-400 group-hover:text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <a href="{{ route('admin.appointments.index') }}"
+       class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ str_starts_with($currentRoute, 'admin.appointments') ? 'bg-red-100 text-red-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+        <svg class="mr-3 h-6 w-6 {{ str_starts_with($currentRoute, 'admin.appointments') ? 'text-red-500' : 'text-gray-400 group-hover:text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a4 4 0 118 0v4m-4 6v6m-4-6h8m-8 6h8" />
         </svg>
         Rendez-vous
     </a>
 
     <!-- Dons -->
-    <a href="{{ route('admin.donations') }}"
-       class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ $currentRoute === 'admin.donations' ? 'bg-red-100 text-red-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
-        <svg class="mr-3 h-6 w-6 {{ $currentRoute === 'admin.donations' ? 'text-red-500' : 'text-gray-400 group-hover:text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <a href="{{ route('admin.donations.index') }}"
+       class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ str_starts_with($currentRoute, 'admin.donations') ? 'bg-red-100 text-red-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+        <svg class="mr-3 h-6 w-6 {{ str_starts_with($currentRoute, 'admin.donations') ? 'text-red-500' : 'text-gray-400 group-hover:text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
         </svg>
         Dons
     </a>
 
     <!-- Stocks -->
-    <a href="{{ route('admin.stocks') }}"
-       class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ $currentRoute === 'admin.stocks' ? 'bg-red-100 text-red-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
-        <svg class="mr-3 h-6 w-6 {{ $currentRoute === 'admin.stocks' ? 'text-red-500' : 'text-gray-400 group-hover:text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <a href="{{ route('admin.donations.inventory') }}"
+       class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ $currentRoute === 'admin.donations.inventory' ? 'bg-red-100 text-red-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+        <svg class="mr-3 h-6 w-6 {{ $currentRoute === 'admin.donations.inventory' ? 'text-red-500' : 'text-gray-400 group-hover:text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         Stocks

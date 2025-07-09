@@ -4,22 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Bank;
 use App\Models\User;
-use App\Models\Appointment;
 use App\Models\Donation;
+use App\Models\Appointment;
 use App\Models\BloodType;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class ReportController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
-
     /**
-     * Afficher la page des rapports
+     * Afficher la page principale des rapports
      */
     public function index()
     {

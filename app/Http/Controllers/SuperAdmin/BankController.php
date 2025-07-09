@@ -5,18 +5,14 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\Bank;
 use App\Models\User;
+use App\Models\Donation;
+use App\Models\Appointment;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class BankController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-        $this->middleware('role:superadmin');
-    }
-
     /**
      * Afficher la liste des banques de sang
      */
@@ -166,9 +162,9 @@ class BankController extends Controller
             'total_users' => User::count(),
             'total_donors' => User::where('role', 'donor')->count(),
             'total_admins' => User::where('role', 'admin')->count(),
-            'total_appointments' => \App\Models\Appointment::count(),
-            'total_donations' => \App\Models\Donation::count(),
-            'available_donations' => \App\Models\Donation::where('status', 'available')->count()
+            'total_appointments' => Appointment::count(),
+            'total_donations' => Donation::count(),
+            'available_donations' => Donation::where('status', 'available')->count()
         ];
 
         // Banques les plus actives

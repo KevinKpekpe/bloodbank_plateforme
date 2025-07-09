@@ -6,16 +6,26 @@ use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Donation;
 use App\Models\BloodType;
+use App\Models\BankAdmin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class AppointmentController extends Controller
 {
-    public function __construct()
+    /**
+     * Récupérer la banque de l'admin connecté
+     */
+    private function getAdminBank()
     {
-        $this->middleware('auth');
-        $this->middleware('role:admin');
+        $user = Auth::user();
+        $bankAdmin = BankAdmin::where('user_id', $user->id)->first();
+
+        if (!$bankAdmin) {
+            abort(403, 'Vous n\'êtes pas associé à une banque de sang.');
+        }
+
+        return $bankAdmin->bank;
     }
 
     /**
@@ -23,7 +33,7 @@ class AppointmentController extends Controller
      */
     public function index(Request $request)
     {
-        $bank = Auth::user()->bank;
+        $bank = $this->getAdminBank();
 
         $query = Appointment::with(['donor', 'donation'])
             ->where('bank_id', $bank->id);
@@ -54,8 +64,10 @@ class AppointmentController extends Controller
      */
     public function show(Appointment $appointment)
     {
+        $bank = $this->getAdminBank();
+
         // Vérifier que le rendez-vous appartient à la banque de l'admin
-        if ($appointment->bank_id !== Auth::user()->bank_id) {
+        if ($appointment->bank_id !== $bank->id) {
             abort(403);
         }
 
@@ -69,8 +81,10 @@ class AppointmentController extends Controller
      */
     public function confirm(Appointment $appointment)
     {
+        $bank = $this->getAdminBank();
+
         // Vérifier que le rendez-vous appartient à la banque de l'admin
-        if ($appointment->bank_id !== Auth::user()->bank_id) {
+        if ($appointment->bank_id !== $bank->id) {
             abort(403);
         }
 
@@ -93,8 +107,10 @@ class AppointmentController extends Controller
      */
     public function reject(Request $request, Appointment $appointment)
     {
+        $bank = $this->getAdminBank();
+
         // Vérifier que le rendez-vous appartient à la banque de l'admin
-        if ($appointment->bank_id !== Auth::user()->bank_id) {
+        if ($appointment->bank_id !== $bank->id) {
             abort(403);
         }
 
@@ -122,8 +138,10 @@ class AppointmentController extends Controller
      */
     public function complete(Request $request, Appointment $appointment)
     {
+        $bank = $this->getAdminBank();
+
         // Vérifier que le rendez-vous appartient à la banque de l'admin
-        if ($appointment->bank_id !== Auth::user()->bank_id) {
+        if ($appointment->bank_id !== $bank->id) {
             abort(403);
         }
 
@@ -163,7 +181,7 @@ class AppointmentController extends Controller
      */
     public function calendar()
     {
-        $bank = Auth::user()->bank;
+        $bank = $this->getAdminBank();
 
         $appointments = Appointment::with('donor')
             ->where('bank_id', $bank->id)
@@ -188,7 +206,7 @@ class AppointmentController extends Controller
      */
     public function statistics()
     {
-        $bank = Auth::user()->bank;
+        $bank = $this->getAdminBank();
 
         // Statistiques par statut
         $statusStats = Appointment::where('bank_id', $bank->id)

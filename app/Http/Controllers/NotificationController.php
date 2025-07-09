@@ -8,17 +8,12 @@ use Illuminate\Support\Facades\Auth;
 
 class NotificationController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
-
     /**
-     * Afficher la liste des notifications
+     * Afficher la liste des notifications de l'utilisateur
      */
     public function index()
     {
-        $notifications = Auth::user()->notifications()
+        $notifications = Auth::user()->customNotifications()
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
@@ -45,7 +40,7 @@ class NotificationController extends Controller
      */
     public function markAllAsRead()
     {
-        Auth::user()->notifications()->unread()->update(['read_at' => now()]);
+        Auth::user()->customNotifications()->unread()->update(['read_at' => now()]);
 
         return response()->json(['success' => true]);
     }
@@ -70,7 +65,7 @@ class NotificationController extends Controller
      */
     public function unreadCount()
     {
-        $count = Auth::user()->notifications()->unread()->count();
+        $count = Auth::user()->customNotifications()->unread()->count();
 
         return response()->json(['count' => $count]);
     }
@@ -80,7 +75,7 @@ class NotificationController extends Controller
      */
     public function latest()
     {
-        $notifications = Auth::user()->notifications()
+        $notifications = Auth::user()->customNotifications()
             ->unread()
             ->latest()
             ->limit(5)

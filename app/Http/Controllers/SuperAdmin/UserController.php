@@ -7,15 +7,10 @@ use App\Models\User;
 use App\Models\Bank;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-        $this->middleware('role:superadmin');
-    }
-
     /**
      * Afficher la liste des utilisateurs
      */

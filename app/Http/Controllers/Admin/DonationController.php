@@ -5,16 +5,27 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Donation;
 use App\Models\BloodType;
+use App\Models\Appointment;
+use App\Models\BankAdmin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class DonationController extends Controller
 {
-    public function __construct()
+    /**
+     * Récupérer la banque de l'admin connecté
+     */
+    private function getAdminBank()
     {
-        $this->middleware('auth');
-        $this->middleware('role:admin');
+        $user = Auth::user();
+        $bankAdmin = BankAdmin::where('user_id', $user->id)->first();
+
+        if (!$bankAdmin) {
+            abort(403, 'Vous n\'êtes pas associé à une banque de sang.');
+        }
+
+        return $bankAdmin->bank;
     }
 
     /**
@@ -22,7 +33,7 @@ class DonationController extends Controller
      */
     public function index(Request $request)
     {
-        $bank = Auth::user()->bank;
+        $bank = $this->getAdminBank();
 
         $query = Donation::with(['donor', 'bloodType'])
             ->where('bank_id', $bank->id);
@@ -58,8 +69,10 @@ class DonationController extends Controller
      */
     public function show(Donation $donation)
     {
+        $bank = $this->getAdminBank();
+
         // Vérifier que le don appartient à la banque de l'admin
-        if ($donation->bank_id !== Auth::user()->bank_id) {
+        if ($donation->bank_id !== $bank->id) {
             abort(403);
         }
 
@@ -73,8 +86,10 @@ class DonationController extends Controller
      */
     public function process(Donation $donation)
     {
+        $bank = $this->getAdminBank();
+
         // Vérifier que le don appartient à la banque de l'admin
-        if ($donation->bank_id !== Auth::user()->bank_id) {
+        if ($donation->bank_id !== $bank->id) {
             abort(403);
         }
 
@@ -95,8 +110,10 @@ class DonationController extends Controller
      */
     public function makeAvailable(Donation $donation)
     {
+        $bank = $this->getAdminBank();
+
         // Vérifier que le don appartient à la banque de l'admin
-        if ($donation->bank_id !== Auth::user()->bank_id) {
+        if ($donation->bank_id !== $bank->id) {
             abort(403);
         }
 
@@ -117,8 +134,10 @@ class DonationController extends Controller
      */
     public function expire(Donation $donation)
     {
+        $bank = $this->getAdminBank();
+
         // Vérifier que le don appartient à la banque de l'admin
-        if ($donation->bank_id !== Auth::user()->bank_id) {
+        if ($donation->bank_id !== $bank->id) {
             abort(403);
         }
 
@@ -139,8 +158,10 @@ class DonationController extends Controller
      */
     public function use(Donation $donation)
     {
+        $bank = $this->getAdminBank();
+
         // Vérifier que le don appartient à la banque de l'admin
-        if ($donation->bank_id !== Auth::user()->bank_id) {
+        if ($donation->bank_id !== $bank->id) {
             abort(403);
         }
 
@@ -161,7 +182,7 @@ class DonationController extends Controller
      */
     public function statistics()
     {
-        $bank = Auth::user()->bank;
+        $bank = $this->getAdminBank();
 
         // Statistiques par statut
         $statusStats = Donation::where('bank_id', $bank->id)
@@ -200,7 +221,7 @@ class DonationController extends Controller
      */
     public function inventory()
     {
-        $bank = Auth::user()->bank;
+        $bank = $this->getAdminBank();
 
         // Stock disponible par groupe sanguin
         $inventory = BloodType::with(['donations' => function ($query) use ($bank) {
