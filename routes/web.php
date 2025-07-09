@@ -10,6 +10,8 @@ use App\Http\Controllers\Public\BloodBankController;
 use App\Http\Controllers\Donor\DonorController;
 use App\Http\Controllers\Donor\AppointmentController;
 use App\Http\Controllers\Donor\DonationController;
+use App\Http\Controllers\Admin\AppointmentController as AdminAppointmentController;
+use App\Http\Controllers\Admin\DonationController as AdminDonationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -80,22 +82,31 @@ Route::middleware(['auth', 'donor'])->prefix('donor')->name('donor.')->group(fun
 */
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    // Dashboard
     Route::get('/dashboard', function () {
         return view('admin.dashboard');
     })->name('dashboard');
 
-    Route::get('/appointments', function () {
-        return view('admin.appointments');
-    })->name('appointments');
+    // Gestion des rendez-vous
+    Route::get('/appointments', [AdminAppointmentController::class, 'index'])->name('appointments.index');
+    Route::get('/appointments/{appointment}', [AdminAppointmentController::class, 'show'])->name('appointments.show');
+    Route::post('/appointments/{appointment}/confirm', [AdminAppointmentController::class, 'confirm'])->name('appointments.confirm');
+    Route::post('/appointments/{appointment}/reject', [AdminAppointmentController::class, 'reject'])->name('appointments.reject');
+    Route::post('/appointments/{appointment}/complete', [AdminAppointmentController::class, 'complete'])->name('appointments.complete');
+    Route::get('/appointments/calendar', [AdminAppointmentController::class, 'calendar'])->name('appointments.calendar');
+    Route::get('/appointments/statistics', [AdminAppointmentController::class, 'statistics'])->name('appointments.statistics');
 
-    Route::get('/donations', function () {
-        return view('admin.donations');
-    })->name('donations');
+    // Gestion des dons
+    Route::get('/donations', [AdminDonationController::class, 'index'])->name('donations.index');
+    Route::get('/donations/{donation}', [AdminDonationController::class, 'show'])->name('donations.show');
+    Route::post('/donations/{donation}/process', [AdminDonationController::class, 'process'])->name('donations.process');
+    Route::post('/donations/{donation}/available', [AdminDonationController::class, 'makeAvailable'])->name('donations.available');
+    Route::post('/donations/{donation}/expire', [AdminDonationController::class, 'expire'])->name('donations.expire');
+    Route::post('/donations/{donation}/use', [AdminDonationController::class, 'use'])->name('donations.use');
+    Route::get('/donations/statistics', [AdminDonationController::class, 'statistics'])->name('donations.statistics');
+    Route::get('/donations/inventory', [AdminDonationController::class, 'inventory'])->name('donations.inventory');
 
-    Route::get('/stocks', function () {
-        return view('admin.stocks');
-    })->name('stocks');
-
+    // Gestion des utilisateurs (donneurs de la banque)
     Route::get('/users', function () {
         return view('admin.users');
     })->name('users');
