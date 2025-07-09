@@ -5,23 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'BloodLink - Don de Sang')</title>
-    <meta name="description" content="@yield('description', 'Plateforme de don de sang et gestion des banques de sang')">
+    <title>@yield('title', 'BloodLink - Plateforme de Don de Sang')</title>
+    <meta name="description" content="@yield('description', 'Plateforme de gestion et géolocalisation des banques de sang à Kinshasa')">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700" rel="stylesheet" />
-
-    <!-- Icons -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
+    <!-- Custom Styles -->
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
+        [x-cloak] { display: none !important; }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -44,19 +39,16 @@
 
                     <!-- Navigation Links -->
                     <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="{{ route('home') }}" class="text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium hover:border-red-300 hover:text-red-700 transition-colors">
+                        <a href="{{ route('home') }}" class="text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium hover:border-red-500 hover:text-red-600">
                             Accueil
                         </a>
-                        <a href="{{ route('about') }}" class="text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium hover:border-red-300 transition-colors">
-                            À propos
-                        </a>
-                        <a href="{{ route('blood-banks') }}" class="text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium hover:border-red-300 transition-colors">
+                        <a href="{{ route('blood-banks') }}" class="text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium hover:border-red-500 hover:text-red-600">
                             Banques de Sang
                         </a>
-                        <a href="{{ route('donate') }}" class="text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium hover:border-red-300 transition-colors">
-                            Faire un Don
+                        <a href="{{ route('about') }}" class="text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium hover:border-red-500 hover:text-red-600">
+                            À Propos
                         </a>
-                        <a href="{{ route('contact') }}" class="text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium hover:border-red-300 transition-colors">
+                        <a href="{{ route('contact') }}" class="text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium hover:border-red-500 hover:text-red-600">
                             Contact
                         </a>
                     </div>
@@ -65,77 +57,45 @@
                 <!-- Right side -->
                 <div class="hidden sm:ml-6 sm:flex sm:items-center">
                     @auth
-                        <!-- Notifications -->
+                        <!-- User menu -->
                         <div class="ml-3 relative">
-                            <a href="{{ route('notifications.index') }}" class="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition-colors relative">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM4.19 4.19A2 2 0 006.03 3h11.94a2 2 0 011.84 1.19L21 7v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 01.19-2.81z" />
-                                </svg>
-                                @php
-                                    $unreadCount = \App\Models\Notification::where('user_id', Auth::id())->whereNull('read_at')->count();
-                                @endphp
-                                @if($unreadCount > 0)
-                                    <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                                        {{ $unreadCount > 9 ? '9+' : $unreadCount }}
-                                    </span>
+                            <div class="flex items-center space-x-4">
+                                <span class="text-sm text-gray-700">
+                                    Bonjour, {{ Auth::user()->name }}
+                                </span>
+
+                                <!-- Dashboard link based on role -->
+                                @if(Auth::user()->role === 'superadmin')
+                                    <a href="{{ route('superadmin.dashboard') }}" class="text-red-600 hover:text-red-500 text-sm font-medium">
+                                        Dashboard Super Admin
+                                    </a>
+                                @elseif(Auth::user()->role === 'admin_banque')
+                                    <a href="{{ route('admin.dashboard') }}" class="text-red-600 hover:text-red-500 text-sm font-medium">
+                                        Dashboard Admin
+                                    </a>
+                                @else
+                                    <a href="{{ route('donor.dashboard') }}" class="text-red-600 hover:text-red-500 text-sm font-medium">
+                                        Mon Dashboard
+                                    </a>
                                 @endif
-                            </a>
-                        </div>
 
-                        <!-- Profile dropdown -->
-                        <div class="ml-3 relative">
-                            <div class="flex items-center space-x-3">
-                                <div class="flex items-center">
-                                    <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                                        <span class="text-sm font-medium text-red-600">
-                                            {{ substr(Auth::user()->name, 0, 1) }}
-                                        </span>
-                                    </div>
-                                    <span class="ml-2 text-sm font-medium text-gray-700">{{ Auth::user()->name }}</span>
-                                </div>
-
-                                <div class="relative" x-data="{ open: false }">
-                                    <button @click="open = !open" class="text-gray-500 hover:text-gray-700 p-1 rounded-lg hover:bg-gray-100 transition-colors">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                        </svg>
+                                <!-- Logout -->
+                                <form method="POST" action="{{ route('logout') }}" class="inline">
+                                    @csrf
+                                    <button type="submit" class="text-gray-500 hover:text-red-600 text-sm font-medium">
+                                        Déconnexion
                                     </button>
-
-                                    <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50">
-                                        <a href="{{ route('dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                            Tableau de bord
-                                        </a>
-                                        <a href="{{ route('donations.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                            Mes dons
-                                        </a>
-                                        @if(Auth::user()->role && (Auth::user()->role->name === 'admin' || Auth::user()->role->name === 'blood_bank'))
-                                            <a href="{{ route('stocks.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                                Gestion des stocks
-                                            </a>
-                                        @endif
-                                        @if(Auth::user()->role && Auth::user()->role->name === 'admin')
-                                            <a href="{{ route('blood-requests.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                                Demandes de sang
-                                            </a>
-                                        @endif
-                                        <hr class="my-1">
-                                        <form method="POST" action="{{ route('logout') }}">
-                                            @csrf
-                                            <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                                Déconnexion
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
+                                </form>
                             </div>
                         </div>
                     @else
+                        <!-- Guest links -->
                         <div class="flex items-center space-x-4">
-                            <a href="{{ route('login') }}" class="text-gray-500 hover:text-gray-700 text-sm font-medium transition-colors">
+                            <a href="{{ route('login') }}" class="text-gray-500 hover:text-red-600 text-sm font-medium">
                                 Connexion
                             </a>
-                            <a href="{{ route('register') }}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                                Inscription
+                            <a href="{{ route('register') }}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                                Devenir Donneur
                             </a>
                         </div>
                     @endauth
@@ -143,8 +103,8 @@
 
                 <!-- Mobile menu button -->
                 <div class="flex items-center sm:hidden">
-                    <button type="button" class="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button type="button" class="text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
+                        <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
@@ -153,78 +113,67 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
+    <!-- Flash Messages -->
+    @if(session('success'))
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+            <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+                {{ session('success') }}
+            </div>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+            <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                {{ session('error') }}
+            </div>
+        </div>
+    @endif
+
+    <!-- Page Content -->
     <main>
         @yield('content')
     </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <footer class="bg-gray-800 text-white mt-16">
+        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div class="col-span-1 md:col-span-2">
-                    <div class="flex items-center mb-4">
-                        <div class="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center mr-2">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                            </svg>
-                        </div>
-                        <span class="text-xl font-bold">BloodLink</span>
-                    </div>
-                    <p class="text-gray-400 mb-4">
-                        Plateforme de don de sang connectant donneurs, banques de sang et hôpitaux pour sauver des vies.
-                    </p>
-                    <div class="flex space-x-4">
-                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                            <i class="fab fa-facebook-f"></i>
-                        </a>
-                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                            <i class="fab fa-instagram"></i>
-                        </a>
-                    </div>
-                </div>
-
                 <div>
-                    <h3 class="text-lg font-semibold mb-4">Liens Rapides</h3>
-                    <ul class="space-y-2">
-                        <li><a href="{{ route('home') }}" class="text-gray-400 hover:text-white transition-colors">Accueil</a></li>
-                        <li><a href="{{ route('about') }}" class="text-gray-400 hover:text-white transition-colors">À propos</a></li>
-                        <li><a href="{{ route('blood-banks') }}" class="text-gray-400 hover:text-white transition-colors">Banques de Sang</a></li>
-                        <li><a href="{{ route('donate') }}" class="text-gray-400 hover:text-white transition-colors">Faire un Don</a></li>
+                    <h3 class="text-lg font-semibold mb-4">BloodLink</h3>
+                    <p class="text-gray-300 text-sm">
+                        Plateforme de gestion et géolocalisation des banques de sang à Kinshasa.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-md font-semibold mb-4">Liens Rapides</h4>
+                    <ul class="space-y-2 text-sm text-gray-300">
+                        <li><a href="{{ route('home') }}" class="hover:text-white">Accueil</a></li>
+                        <li><a href="{{ route('blood-banks') }}" class="hover:text-white">Banques de Sang</a></li>
+                        <li><a href="{{ route('about') }}" class="hover:text-white">À Propos</a></li>
+                        <li><a href="{{ route('contact') }}" class="hover:text-white">Contact</a></li>
                     </ul>
                 </div>
-
                 <div>
-                    <h3 class="text-lg font-semibold mb-4">Contact</h3>
-                    <ul class="space-y-2">
-                        <li class="text-gray-400">
-                            <i class="fas fa-phone mr-2"></i>
-                            +33 1 23 45 67 89
-                        </li>
-                        <li class="text-gray-400">
-                            <i class="fas fa-envelope mr-2"></i>
-                            contact@bloodlink.fr
-                        </li>
-                        <li class="text-gray-400">
-                            <i class="fas fa-map-marker-alt mr-2"></i>
-                            Paris, France
-                        </li>
+                    <h4 class="text-md font-semibold mb-4">Don de Sang</h4>
+                    <ul class="space-y-2 text-sm text-gray-300">
+                        <li><a href="{{ route('register') }}" class="hover:text-white">Devenir Donneur</a></li>
+                        <li><a href="{{ route('partnership') }}" class="hover:text-white">Partenariat</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-md font-semibold mb-4">Contact</h4>
+                    <ul class="space-y-2 text-sm text-gray-300">
+                        <li><i class="fas fa-phone mr-2"></i>+243 123 456 789</li>
+                        <li><i class="fas fa-envelope mr-2"></i>contact@bloodlink.cd</li>
+                        <li><i class="fas fa-map-marker-alt mr-2"></i>Kinshasa, RDC</li>
                     </ul>
                 </div>
             </div>
-
-            <div class="border-t border-gray-800 mt-8 pt-8 text-center">
-                <p class="text-gray-400">
-                    © {{ date('Y') }} BloodLink. Tous droits réservés.
-                </p>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-300">
+                <p>&copy; {{ date('Y') }} BloodLink. Tous droits réservés.</p>
             </div>
         </div>
     </footer>
-
-    <!-- Alpine.js -->
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 </html>

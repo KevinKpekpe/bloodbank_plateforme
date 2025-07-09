@@ -1,125 +1,212 @@
 @extends('layouts.app')
 
-@section('title', 'Inscription - BloodLink')
-@section('description', 'Créez votre compte BloodLink pour participer aux dons de sang et sauver des vies.')
+@section('title', 'Inscription Donneur - BloodLink')
+@section('description', 'Créez votre compte donneur sur BloodLink')
 
 @section('content')
-<div class="min-h-screen bg-gray-50 py-8">
-    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-8">
-            <div class="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>
+<div class="min-h-screen bg-gray-50 py-12 sm:px-6 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-2xl">
+        <div class="flex justify-center">
+            <div class="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center">
+                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
             </div>
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">Créer votre compte</h1>
-            <p class="text-gray-600">Rejoignez BloodLink et commencez à sauver des vies</p>
         </div>
+        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Devenez donneur de sang
+        </h2>
+        <p class="mt-2 text-center text-sm text-gray-600">
+            Ou
+            <a href="{{ route('login') }}" class="font-medium text-red-600 hover:text-red-500">
+                connectez-vous à votre compte existant
+            </a>
+        </p>
+    </div>
 
-        @if($errors->any())
-            <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                <ul class="list-disc list-inside">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        <div class="bg-white rounded-lg shadow-lg p-8">
-            <form method="POST" action="{{ route('register') }}" class="space-y-6">
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl">
+        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+            <form class="space-y-6" action="{{ route('register') }}" method="POST">
                 @csrf
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Nom complet *</label>
-                        <input type="text" name="name" id="name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 transition-colors" required value="{{ old('name') }}">
-                    </div>
-                    <div>
-                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Adresse email *</label>
-                        <input type="email" name="email" id="email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 transition-colors" required value="{{ old('email') }}">
-                    </div>
-                    <div>
-                        <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Téléphone</label>
-                        <input type="text" name="phone" id="phone" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 transition-colors" value="{{ old('phone') }}">
-                    </div>
-                    <div>
-                        <label for="blood_type_id" class="block text-sm font-medium text-gray-700 mb-2">Groupe sanguin</label>
-                        <select name="blood_type_id" id="blood_type_id" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 transition-colors">
-                            <option value="">Sélectionner</option>
-                            @foreach(\App\Models\BloodType::all() as $bloodType)
-                                <option value="{{ $bloodType->id }}" @if(old('blood_type_id') == $bloodType->id) selected @endif>{{ $bloodType->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label for="date_of_birth" class="block text-sm font-medium text-gray-700 mb-2">Date de naissance</label>
-                        <input type="date" name="date_of_birth" id="date_of_birth" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 transition-colors" value="{{ old('date_of_birth') }}">
-                    </div>
-                    <div>
-                        <label for="gender" class="block text-sm font-medium text-gray-700 mb-2">Genre</label>
-                        <select name="gender" id="gender" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 transition-colors">
-                            <option value="">Sélectionner</option>
-                            <option value="male" @if(old('gender') == 'male') selected @endif>Homme</option>
-                            <option value="female" @if(old('gender') == 'female') selected @endif>Femme</option>
-                            <option value="other" @if(old('gender') == 'other') selected @endif>Autre</option>
-                        </select>
-                    </div>
-                    <div class="md:col-span-2">
-                        <label for="address" class="block text-sm font-medium text-gray-700 mb-2">Adresse</label>
-                        <input type="text" name="address" id="address" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 transition-colors" value="{{ old('address') }}">
-                    </div>
-                    <div>
-                        <label for="city" class="block text-sm font-medium text-gray-700 mb-2">Ville</label>
-                        <input type="text" name="city" id="city" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 transition-colors" value="{{ old('city') }}">
-                    </div>
-                    <div>
-                        <label for="postal_code" class="block text-sm font-medium text-gray-700 mb-2">Code postal</label>
-                        <input type="text" name="postal_code" id="postal_code" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 transition-colors" value="{{ old('postal_code') }}">
-                    </div>
-                    <div>
-                        <label for="role" class="block text-sm font-medium text-gray-700 mb-2">Rôle *</label>
-                        <select name="role" id="role" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 transition-colors" required>
-                            <option value="">Sélectionner</option>
-                            <option value="donor" @if(old('role') == 'donor') selected @endif>Donneur</option>
-                            <option value="doctor" @if(old('role') == 'doctor') selected @endif>Médecin</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Mot de passe *</label>
-                        <input type="password" name="password" id="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 transition-colors" required>
-                    </div>
-                    <div>
-                        <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">Confirmation du mot de passe *</label>
-                        <input type="password" name="password_confirmation" id="password_confirmation" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 transition-colors" required>
+                <!-- Informations de compte -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Informations de compte</h3>
+
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700">
+                                Nom d'utilisateur
+                            </label>
+                            <div class="mt-1">
+                                <input id="name" name="name" type="text" required
+                                    class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm @error('name') border-red-500 @enderror"
+                                    value="{{ old('name') }}">
+                            </div>
+                            @error('name')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700">
+                                Adresse email
+                            </label>
+                            <div class="mt-1">
+                                <input id="email" name="email" type="email" autocomplete="email" required
+                                    class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm @error('email') border-red-500 @enderror"
+                                    value="{{ old('email') }}">
+                            </div>
+                            @error('email')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="password" class="block text-sm font-medium text-gray-700">
+                                Mot de passe
+                            </label>
+                            <div class="mt-1">
+                                <input id="password" name="password" type="password" required
+                                    class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm @error('password') border-red-500 @enderror">
+                            </div>
+                            @error('password')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="password_confirmation" class="block text-sm font-medium text-gray-700">
+                                Confirmer le mot de passe
+                            </label>
+                            <div class="mt-1">
+                                <input id="password_confirmation" name="password_confirmation" type="password" required
+                                    class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="flex items-start">
-                    <div class="flex items-center h-5">
-                        <input id="terms" name="terms" type="checkbox" required
-                               class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
+                <!-- Informations personnelles -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Informations personnelles</h3>
+
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div>
+                            <label for="firstname" class="block text-sm font-medium text-gray-700">
+                                Prénom
+                            </label>
+                            <div class="mt-1">
+                                <input id="firstname" name="firstname" type="text" required
+                                    class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm @error('firstname') border-red-500 @enderror"
+                                    value="{{ old('firstname') }}">
+                            </div>
+                            @error('firstname')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="surname" class="block text-sm font-medium text-gray-700">
+                                Nom de famille
+                            </label>
+                            <div class="mt-1">
+                                <input id="surname" name="surname" type="text" required
+                                    class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm @error('surname') border-red-500 @enderror"
+                                    value="{{ old('surname') }}">
+                            </div>
+                            @error('surname')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="blood_type_id" class="block text-sm font-medium text-gray-700">
+                                Groupe sanguin
+                            </label>
+                            <div class="mt-1">
+                                <select id="blood_type_id" name="blood_type_id" required
+                                    class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm @error('blood_type_id') border-red-500 @enderror">
+                                    <option value="">Sélectionnez votre groupe sanguin</option>
+                                    @foreach($bloodTypes as $bloodType)
+                                        <option value="{{ $bloodType->id }}" {{ old('blood_type_id') == $bloodType->id ? 'selected' : '' }}>
+                                            {{ $bloodType->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            @error('blood_type_id')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="gender" class="block text-sm font-medium text-gray-700">
+                                Genre
+                            </label>
+                            <div class="mt-1">
+                                <select id="gender" name="gender" required
+                                    class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm @error('gender') border-red-500 @enderror">
+                                    <option value="">Sélectionnez votre genre</option>
+                                    <option value="male" {{ old('gender') == 'male' ? 'selected' : '' }}>Masculin</option>
+                                    <option value="female" {{ old('gender') == 'female' ? 'selected' : '' }}>Féminin</option>
+                                    <option value="other" {{ old('gender') == 'other' ? 'selected' : '' }}>Autre</option>
+                                </select>
+                            </div>
+                            @error('gender')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="birthdate" class="block text-sm font-medium text-gray-700">
+                                Date de naissance
+                            </label>
+                            <div class="mt-1">
+                                <input id="birthdate" name="birthdate" type="date" required
+                                    class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm @error('birthdate') border-red-500 @enderror"
+                                    value="{{ old('birthdate') }}">
+                            </div>
+                            @error('birthdate')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="phone_number" class="block text-sm font-medium text-gray-700">
+                                Numéro de téléphone
+                            </label>
+                            <div class="mt-1">
+                                <input id="phone_number" name="phone_number" type="tel" required
+                                    class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm @error('phone_number') border-red-500 @enderror"
+                                    value="{{ old('phone_number') }}">
+                            </div>
+                            @error('phone_number')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
-                    <div class="ml-3 text-sm">
-                        <label for="terms" class="text-gray-900">
-                            J'accepte les <a href="#" class="text-red-600 hover:text-red-500 transition-colors">conditions d'utilisation</a> et la <a href="#" class="text-red-600 hover:text-red-500 transition-colors">politique de confidentialité</a>
+
+                    <div class="mt-6">
+                        <label for="address" class="block text-sm font-medium text-gray-700">
+                            Adresse complète
                         </label>
+                        <div class="mt-1">
+                            <textarea id="address" name="address" rows="3" required
+                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm @error('address') border-red-500 @enderror"
+                                placeholder="Votre adresse complète">{{ old('address') }}</textarea>
+                        </div>
+                        @error('address')
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
                 </div>
 
                 <div>
-                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
-                        Créer mon compte
+                    <button type="submit"
+                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                        Créer mon compte donneur
                     </button>
-                </div>
-
-                <div class="text-center">
-                    <p class="text-sm text-gray-600">
-                        Déjà un compte ?
-                        <a href="{{ route('login') }}" class="font-medium text-red-600 hover:text-red-500 transition-colors">
-                            Connectez-vous
-                        </a>
-                    </p>
                 </div>
             </form>
         </div>
