@@ -1,124 +1,93 @@
-@extends('layouts.app')
+@extends('layouts.superadmin')
 
 @section('title', 'Rapport Général - BloodLink')
+@section('description', 'Rapport général de la plateforme BloodLink')
+@section('page-title', 'Rapport Général')
 
 @section('content')
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="page-title-box">
-                <div class="page-title-right">
-                    <ol class="breadcrumb m-0">
-                        <li class="breadcrumb-item"><a href="{{ route('superadmin.dashboard') }}">Dashboard</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('reports.index') }}">Rapports</a></li>
-                        <li class="breadcrumb-item active">Général</li>
-                    </ol>
-                </div>
-                <h4 class="page-title">
-                    <i class="mdi mdi-chart-donut me-1"></i>
-                    Rapport Général de la Plateforme
-                </h4>
-            </div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- En-tête -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Rapport Général de la Plateforme</h1>
+            <p class="mt-2 text-gray-600">Vue d'ensemble complète du système BloodLink</p>
         </div>
+        <a href="{{ route('reports.index') }}"
+           class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Retour aux rapports
+        </a>
     </div>
 
     <!-- Statistiques Principales -->
-    <div class="row">
-        <div class="col-xl-3 col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="avatar-sm rounded">
-                                <span class="avatar-title bg-primary-lighten text-primary rounded">
-                                    <i class="mdi mdi-hospital-building font-20"></i>
-                                </span>
-                            </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Banques de Sang -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-hospital text-red-600 text-xl"></i>
                         </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h5 class="font-14 my-1">Banques de Sang</h5>
-                            <h3 class="text-primary my-1">{{ $stats['total_banks'] }}</h3>
-                            <p class="mb-0 text-muted">
-                                <span class="text-success me-2">
-                                    <i class="mdi mdi-arrow-up-bold"></i> {{ $stats['active_banks'] }} actives
-                                </span>
-                            </p>
-                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-2xl font-bold text-gray-900">{{ $stats['total_banks'] }}</h3>
+                        <p class="text-gray-600">Banques de Sang</p>
+                        <p class="text-sm text-green-600">{{ $stats['active_banks'] }} actives</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="avatar-sm rounded">
-                                <span class="avatar-title bg-success-lighten text-success rounded">
-                                    <i class="mdi mdi-account-group font-20"></i>
-                                </span>
-                            </div>
+        <!-- Utilisateurs -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-users text-blue-600 text-xl"></i>
                         </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h5 class="font-14 my-1">Utilisateurs</h5>
-                            <h3 class="text-success my-1">{{ $stats['total_users'] }}</h3>
-                            <p class="mb-0 text-muted">
-                                <span class="text-info me-2">
-                                    <i class="mdi mdi-arrow-up-bold"></i> {{ $stats['total_donors'] }} donneurs
-                                </span>
-                            </p>
-                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-2xl font-bold text-gray-900">{{ $stats['total_users'] }}</h3>
+                        <p class="text-gray-600">Utilisateurs</p>
+                        <p class="text-sm text-blue-600">{{ $stats['total_donors'] }} donneurs</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="avatar-sm rounded">
-                                <span class="avatar-title bg-info-lighten text-info rounded">
-                                    <i class="mdi mdi-calendar-check font-20"></i>
-                                </span>
-                            </div>
+        <!-- Rendez-vous -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-calendar-check text-yellow-600 text-xl"></i>
                         </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h5 class="font-14 my-1">Rendez-vous</h5>
-                            <h3 class="text-info my-1">{{ $stats['total_appointments'] }}</h3>
-                            <p class="mb-0 text-muted">
-                                <span class="text-warning me-2">
-                                    <i class="mdi mdi-clock"></i> Total
-                                </span>
-                            </p>
-                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-2xl font-bold text-gray-900">{{ $stats['total_appointments'] }}</h3>
+                        <p class="text-gray-600">Rendez-vous</p>
+                        <p class="text-sm text-yellow-600">Total</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="avatar-sm rounded">
-                                <span class="avatar-title bg-warning-lighten text-warning rounded">
-                                    <i class="mdi mdi-heart-pulse font-20"></i>
-                                </span>
-                            </div>
+        <!-- Dons de Sang -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-heart text-green-600 text-xl"></i>
                         </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h5 class="font-14 my-1">Dons de Sang</h5>
-                            <h3 class="text-warning my-1">{{ $stats['total_donations'] }}</h3>
-                            <p class="mb-0 text-muted">
-                                <span class="text-success me-2">
-                                    <i class="mdi mdi-arrow-up-bold"></i> {{ $stats['available_donations'] }} disponibles
-                                </span>
-                            </p>
-                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-2xl font-bold text-gray-900">{{ $stats['total_donations'] }}</h3>
+                        <p class="text-gray-600">Dons de Sang</p>
+                        <p class="text-sm text-green-600">{{ $stats['available_donations'] }} disponibles</p>
                     </div>
                 </div>
             </div>
@@ -126,122 +95,93 @@
     </div>
 
     <!-- Graphiques -->
-    <div class="row">
-        <div class="col-xl-8">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Évolution des Rendez-vous et Dons (6 derniers mois)</h5>
-                    <canvas id="monthlyChart" height="300"></canvas>
-                </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <!-- Évolution des Rendez-vous et Dons -->
+        <div class="lg:col-span-2 bg-white shadow-md rounded-lg overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900">Évolution des Rendez-vous et Dons (6 derniers mois)</h2>
+            </div>
+            <div class="p-6">
+                <canvas id="monthlyChart" height="300"></canvas>
             </div>
         </div>
 
-        <div class="col-xl-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Statut des Dons</h5>
-                    <canvas id="donationsChart" height="300"></canvas>
-                </div>
+        <!-- Statut des Dons -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900">Statut des Dons</h2>
+            </div>
+            <div class="p-6">
+                <canvas id="donationsChart" height="300"></canvas>
             </div>
         </div>
     </div>
 
     <!-- Tableau des Statistiques Mensuelles -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Statistiques Mensuelles</h5>
-
-                    <div class="table-responsive">
-                        <table class="table table-centered table-hover mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Mois</th>
-                                    <th>Rendez-vous</th>
-                                    <th>Dons</th>
-                                    <th>Taux de Conversion</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($monthlyStats as $stat)
-                                <tr>
-                                    <td>{{ $stat['month'] }}</td>
-                                    <td>
-                                        <span class="badge bg-info">{{ $stat['appointments'] }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-success">{{ $stat['donations'] }}</span>
-                                    </td>
-                                    <td>
-                                        @php
-                                            $rate = $stat['appointments'] > 0 ? round(($stat['donations'] / $stat['appointments']) * 100, 1) : 0;
-                                        @endphp
-                                        <span class="badge bg-{{ $rate >= 50 ? 'success' : ($rate >= 25 ? 'warning' : 'danger') }}">
-                                            {{ $rate }}%
-                                        </span>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-900">Statistiques Mensuelles</h2>
         </div>
-    </div>
-
-    <!-- Actions -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Actions</h5>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <a href="{{ route('reports.export') }}" class="btn btn-primary me-2">
-                                <i class="mdi mdi-download me-1"></i>
-                                Exporter en PDF
-                            </a>
-                            <a href="{{ route('reports.export') }}" class="btn btn-success me-2">
-                                <i class="mdi mdi-file-excel me-1"></i>
-                                Exporter en Excel
-                            </a>
-                        </div>
-                        <div class="col-md-6 text-end">
-                            <a href="{{ route('reports.index') }}" class="btn btn-secondary">
-                                <i class="mdi mdi-arrow-left me-1"></i>
-                                Retour aux Rapports
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mois</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rendez-vous</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dons</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Taux de Conversion</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach($monthlyStats as $stat)
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $stat['month'] }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {{ $stat['appointments'] }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                {{ $stat['donations'] }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @php
+                                $rate = $stat['appointments'] > 0 ? round(($stat['donations'] / $stat['appointments']) * 100, 1) : 0;
+                                $rateColor = $rate >= 50 ? 'green' : ($rate >= 25 ? 'yellow' : 'red');
+                            @endphp
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ $rateColor }}-100 text-{{ $rateColor }}-800">
+                                {{ $rate }}%
+                            </span>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 
-@push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 // Graphique mensuel
 const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-const monthlyChart = new Chart(monthlyCtx, {
+new Chart(monthlyCtx, {
     type: 'line',
     data: {
-        labels: @json(array_column($monthlyStats, 'month')),
+        labels: @json($monthlyStats->pluck('month')),
         datasets: [{
             label: 'Rendez-vous',
-            data: @json(array_column($monthlyStats, 'appointments')),
-            borderColor: 'rgb(75, 192, 192)',
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            data: @json($monthlyStats->pluck('appointments')),
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
             tension: 0.1
         }, {
             label: 'Dons',
-            data: @json(array_column($monthlyStats, 'donations')),
-            borderColor: 'rgb(255, 99, 132)',
-            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            data: @json($monthlyStats->pluck('donations')),
+            borderColor: 'rgb(34, 197, 94)',
+            backgroundColor: 'rgba(34, 197, 94, 0.1)',
             tension: 0.1
         }]
     },
@@ -258,60 +198,27 @@ const monthlyChart = new Chart(monthlyCtx, {
 
 // Graphique des dons
 const donationsCtx = document.getElementById('donationsChart').getContext('2d');
-const donationsChart = new Chart(donationsCtx, {
+new Chart(donationsCtx, {
     type: 'doughnut',
     data: {
         labels: ['Disponibles', 'Utilisés', 'Expirés'],
         datasets: [{
             data: [
                 {{ $stats['available_donations'] }},
-                {{ $stats['used_donations'] }},
-                {{ $stats['expired_donations'] }}
+                {{ $stats['total_donations'] - $stats['available_donations'] }},
+                0
             ],
             backgroundColor: [
-                'rgba(75, 192, 192, 0.8)',
-                'rgba(255, 99, 132, 0.8)',
-                'rgba(255, 205, 86, 0.8)'
-            ],
-            borderWidth: 2
+                'rgb(34, 197, 94)',
+                'rgb(239, 68, 68)',
+                'rgb(156, 163, 175)'
+            ]
         }]
     },
     options: {
         responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'bottom'
-            }
-        }
+        maintainAspectRatio: false
     }
 });
 </script>
-@endpush
-
-<style>
-.bg-primary-lighten {
-    background-color: rgba(114, 124, 245, 0.1);
-}
-
-.bg-success-lighten {
-    background-color: rgba(10, 207, 151, 0.1);
-}
-
-.bg-info-lighten {
-    background-color: rgba(57, 175, 209, 0.1);
-}
-
-.bg-warning-lighten {
-    background-color: rgba(255, 188, 0, 0.1);
-}
-
-.avatar-sm {
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-</style>
 @endsection

@@ -39,8 +39,9 @@
                     <h3 class="text-lg font-semibold text-gray-900">Stocks Totaux</h3>
                     @php
                         $totalStocks = \App\Models\BloodStock::where('bank_id', $bank->id)->sum('quantity');
+                        $totalStocksL = $totalStocks / 1000; // Convertir en litres
                     @endphp
-                    <p class="text-2xl font-bold text-green-600">{{ $totalStocks }}</p>
+                    <p class="text-2xl font-bold text-green-600">{{ number_format($totalStocksL, 1) }}L</p>
                 </div>
             </div>
         </div>
@@ -55,7 +56,7 @@
                     <h3 class="text-lg font-semibold text-gray-900">Stocks Critiques</h3>
                     @php
                         $criticalStocks = \App\Models\BloodStock::where('bank_id', $bank->id)
-                            ->where('status', 'critical')
+                            ->where('quantity', '<=', \DB::raw('critical_level'))
                             ->count();
                     @endphp
                     <p class="text-2xl font-bold text-red-600">{{ $criticalStocks }}</p>

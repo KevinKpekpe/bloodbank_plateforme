@@ -20,8 +20,8 @@
                     </svg>
                 </div>
                 <div class="ml-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Total Unités</h3>
-                    <p class="text-2xl font-bold text-red-600">{{ $inventory->sum('available_units') }}</p>
+                    <h3 class="text-lg font-semibold text-gray-900">Total Volume</h3>
+                    <p class="text-2xl font-bold text-red-600">{{ number_format($inventory->sum('available_units') / 1000, 1) }}L</p>
                 </div>
             </div>
         </div>
@@ -82,7 +82,7 @@
                             Groupe Sanguin
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Unités Disponibles
+                            Volume (ml)
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Volume Total
@@ -106,7 +106,7 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">{{ $item['available_units'] }}</div>
+                                <div class="text-sm font-medium text-gray-900">{{ number_format($item['available_units']) }}ml</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900">{{ number_format($item['total_volume'], 1) }}L</div>
@@ -125,7 +125,11 @@
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                         Rupture
                                     </span>
-                                @elseif($item['available_units'] <= 2)
+                                @elseif($item['is_critical'])
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        Critique
+                                    </span>
+                                @elseif($item['is_low'])
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                                         Faible
                                     </span>
@@ -174,8 +178,8 @@
                     @foreach($expiringSoon as $donation)
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">{{ $donation->donor->name }}</div>
-                                <div class="text-sm text-gray-500">{{ $donation->donor->email }}</div>
+                                <div class="text-sm font-medium text-gray-900">{{ $donation->donor->full_name }}</div>
+                                <div class="text-sm text-gray-500">{{ $donation->donor->user->email }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">

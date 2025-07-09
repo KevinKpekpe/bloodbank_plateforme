@@ -18,7 +18,7 @@ class BankController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Bank::withCount(['users', 'appointments', 'donations']);
+        $query = Bank::withCount(['appointments', 'donations']);
 
         // Filtres
         if ($request->filled('search')) {
@@ -31,6 +31,24 @@ class BankController extends Controller
         }
 
         $banks = $query->orderBy('name')->paginate(15);
+
+        // Calculer le nombre d'utilisateurs pour chaque banque
+        foreach ($banks as $bank) {
+            $userIds = collect();
+
+            // Utilisateurs avec des rendez-vous
+            $appointmentUserIds = $bank->appointments()
+                ->join('donors', 'appointments.donor_id', '=', 'donors.id')
+                ->pluck('donors.user_id');
+
+            // Utilisateurs avec des dons
+            $donationUserIds = $bank->donations()
+                ->join('donors', 'donations.donor_id', '=', 'donors.id')
+                ->pluck('donors.user_id');
+
+            // Combiner et dédupliquer
+            $bank->users_count = $appointmentUserIds->merge($donationUserIds)->unique()->count();
+        }
 
         return view('superadmin.banks.index', compact('banks'));
     }
@@ -157,27 +175,65 @@ class BankController extends Controller
     }
 
     /**
-     * Statistiques globales des banques
+     * Statistiques globales des banques ou d'une banque spécifique
      */
-    public function statistics()
+    public function statistics(Bank $bank = null)
     {
-        $stats = [
-            'total_banks' => Bank::count(),
-            'active_banks' => Bank::where('status', 'active')->count(),
-            'total_users' => User::count(),
-            'total_donors' => User::where('role', 'donor')->count(),
-            'total_admins' => User::where('role', 'admin_banque')->count(),
-            'total_appointments' => Appointment::count(),
-            'total_donations' => Donation::count(),
-            'available_donations' => Donation::where('status', 'available')->count()
-        ];
+        if ($bank) {
+            // Statistiques d'une banque spécifique
+            $bank->load(['admin', 'appointments', 'donations']);
 
-        // Banques les plus actives
-        $topBanks = Bank::withCount(['appointments', 'donations'])
-            ->orderBy('appointments_count', 'desc')
-            ->limit(5)
-            ->get();
+            // Statistiques de base
+            $stats = [
+                'total_appointments' => $bank->appointments()->count(),
+                'total_donations' => $bank->donations()->count(),
+                'pending_appointments' => $bank->appointments()->where('status', 'pending')->count(),
+                'available_donations' => $bank->donations()->where('status', 'available')->count()
+            ];
 
-        return view('superadmin.banks.statistics', compact('stats', 'topBanks'));
+            // Dons par groupe sanguin
+            $bloodTypeStats = $bank->donations()
+                ->with('bloodType')
+                ->selectRaw('blood_type_id, COUNT(*) as count, SUM(volume) as total_volume')
+                ->groupBy('blood_type_id')
+                ->get();
+
+            // Dons par mois (6 derniers mois)
+            $monthlyStats = $bank->donations()
+                ->where('donation_date', '>=', now()->subMonths(6))
+                ->selectRaw('strftime("%Y-%m", donation_date) as month, COUNT(*) as count, SUM(volume) as total_volume')
+                ->groupBy('month')
+                ->orderBy('month')
+                ->get();
+
+            // Dons du jour
+            $todayDonations = $bank->donations()
+                ->with(['donor.user', 'bloodType'])
+                ->whereDate('donation_date', today())
+                ->orderBy('donation_date', 'desc')
+                ->get();
+
+            return view('superadmin.banks.statistics', compact('bank', 'stats', 'bloodTypeStats', 'monthlyStats', 'todayDonations'));
+        } else {
+            // Statistiques globales
+            $stats = [
+                'total_banks' => Bank::count(),
+                'active_banks' => Bank::where('status', 'active')->count(),
+                'total_users' => User::count(),
+                'total_donors' => User::where('role', 'donor')->count(),
+                'total_admins' => User::where('role', 'admin_banque')->count(),
+                'total_appointments' => Appointment::count(),
+                'total_donations' => Donation::count(),
+                'available_donations' => Donation::where('status', 'available')->count()
+            ];
+
+            // Banques les plus actives
+            $topBanks = Bank::withCount(['appointments', 'donations'])
+                ->orderBy('appointments_count', 'desc')
+                ->limit(5)
+                ->get();
+
+            return view('superadmin.banks.statistics', compact('stats', 'topBanks'));
+        }
     }
 }

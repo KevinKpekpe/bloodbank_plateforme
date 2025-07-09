@@ -58,30 +58,22 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users',
             'phone' => 'required|string|max:20',
-            'role' => 'required|in:donor,admin_banque',
+            'role' => 'required|in:admin_banque',
             'password' => 'required|string|min:8|confirmed',
-            'birth_date' => 'required_if:role,donor|nullable|date|before:today',
-            'blood_type_id' => 'required_if:role,donor|nullable|exists:blood_types,id'
         ]);
 
-        $userData = [
+        // Créer l'utilisateur (seulement admin_banque)
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'phone_number' => $request->phone,
             'role' => $request->role,
             'password' => Hash::make($request->password),
             'email_verified_at' => now()
-        ];
-
-        if ($request->role === 'donor') {
-            $userData['birth_date'] = $request->birth_date;
-            $userData['blood_type_id'] = $request->blood_type_id;
-        }
-
-        User::create($userData);
+        ]);
 
         return redirect()->route('superadmin.users.index')
-            ->with('success', 'Utilisateur créé avec succès.');
+            ->with('success', 'Administrateur créé avec succès.');
     }
 
     /**
@@ -89,7 +81,7 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        $user->load(['managedBank', 'bloodType', 'appointments', 'donations']);
+        $user->load(['managedBank']);
 
         return view('superadmin.users.show', compact('user'));
     }
@@ -112,30 +104,19 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
             'phone' => 'required|string|max:20',
-            'role' => 'required|in:donor,admin_banque',
-            'birth_date' => 'required_if:role,donor|nullable|date|before:today',
-            'blood_type_id' => 'required_if:role,donor|nullable|exists:blood_types,id'
+            'role' => 'required|in:admin_banque',
         ]);
 
-        $userData = [
+        // Mettre à jour l'utilisateur (seulement admin_banque)
+        $user->update([
             'name' => $request->name,
             'email' => $request->email,
             'phone_number' => $request->phone,
             'role' => $request->role
-        ];
-
-        if ($request->role === 'donor') {
-            $userData['birth_date'] = $request->birth_date;
-            $userData['blood_type_id'] = $request->blood_type_id;
-        } else {
-            $userData['birth_date'] = null;
-            $userData['blood_type_id'] = null;
-        }
-
-        $user->update($userData);
+        ]);
 
         return redirect()->route('superadmin.users.show', $user)
-            ->with('success', 'Utilisateur mis à jour avec succès.');
+            ->with('success', 'Administrateur mis à jour avec succès.');
     }
 
     /**

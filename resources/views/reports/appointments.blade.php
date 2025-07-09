@@ -1,124 +1,93 @@
-@extends('layouts.app')
+@extends('layouts.superadmin')
 
 @section('title', 'Rapport des Rendez-vous - BloodLink')
+@section('description', 'Rapport détaillé des rendez-vous')
+@section('page-title', 'Rapport des Rendez-vous')
 
 @section('content')
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="page-title-box">
-                <div class="page-title-right">
-                    <ol class="breadcrumb m-0">
-                        <li class="breadcrumb-item"><a href="{{ route('superadmin.dashboard') }}">Dashboard</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('reports.index') }}">Rapports</a></li>
-                        <li class="breadcrumb-item active">Rendez-vous</li>
-                    </ol>
-                </div>
-                <h4 class="page-title">
-                    <i class="mdi mdi-calendar-check me-1"></i>
-                    Rapport des Rendez-vous
-                </h4>
-            </div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- En-tête -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Rapport des Rendez-vous</h1>
+            <p class="mt-2 text-gray-600">Statistiques détaillées des rendez-vous de don</p>
         </div>
+        <a href="{{ route('reports.index') }}"
+           class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Retour aux rapports
+        </a>
     </div>
 
     <!-- Statistiques Principales -->
-    <div class="row">
-        <div class="col-xl-3 col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="avatar-sm rounded">
-                                <span class="avatar-title bg-primary-lighten text-primary rounded">
-                                    <i class="mdi mdi-calendar-check font-20"></i>
-                                </span>
-                            </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Rendez-vous -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-calendar-check text-blue-600 text-xl"></i>
                         </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h5 class="font-14 my-1">Total Rendez-vous</h5>
-                            <h3 class="text-primary my-1">{{ $appointmentStats['total'] }}</h3>
-                            <p class="mb-0 text-muted">
-                                <span class="text-success me-2">
-                                    <i class="mdi mdi-arrow-up-bold"></i> Tous
-                                </span>
-                            </p>
-                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-2xl font-bold text-gray-900">{{ $appointmentStats['total'] }}</h3>
+                        <p class="text-gray-600">Total Rendez-vous</p>
+                        <p class="text-sm text-blue-600">Tous</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="avatar-sm rounded">
-                                <span class="avatar-title bg-warning-lighten text-warning rounded">
-                                    <i class="mdi mdi-clock font-20"></i>
-                                </span>
-                            </div>
+        <!-- En Attente -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-clock text-yellow-600 text-xl"></i>
                         </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h5 class="font-14 my-1">En Attente</h5>
-                            <h3 class="text-warning my-1">{{ $appointmentStats['pending'] }}</h3>
-                            <p class="mb-0 text-muted">
-                                <span class="text-info me-2">
-                                    <i class="mdi mdi-clock"></i> À confirmer
-                                </span>
-                            </p>
-                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-2xl font-bold text-gray-900">{{ $appointmentStats['pending'] }}</h3>
+                        <p class="text-gray-600">En Attente</p>
+                        <p class="text-sm text-yellow-600">À confirmer</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="avatar-sm rounded">
-                                <span class="avatar-title bg-success-lighten text-success rounded">
-                                    <i class="mdi mdi-check-circle font-20"></i>
-                                </span>
-                            </div>
+        <!-- Confirmés -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
                         </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h5 class="font-14 my-1">Confirmés</h5>
-                            <h3 class="text-success my-1">{{ $appointmentStats['confirmed'] }}</h3>
-                            <p class="mb-0 text-muted">
-                                <span class="text-success me-2">
-                                    <i class="mdi mdi-check"></i> Validés
-                                </span>
-                            </p>
-                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-2xl font-bold text-gray-900">{{ $appointmentStats['confirmed'] }}</h3>
+                        <p class="text-gray-600">Confirmés</p>
+                        <p class="text-sm text-green-600">Validés</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="avatar-sm rounded">
-                                <span class="avatar-title bg-info-lighten text-info rounded">
-                                    <i class="mdi mdi-calendar-check font-20"></i>
-                                </span>
-                            </div>
+        <!-- Terminés -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-calendar-check text-purple-600 text-xl"></i>
                         </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h5 class="font-14 my-1">Terminés</h5>
-                            <h3 class="text-info my-1">{{ $appointmentStats['completed'] }}</h3>
-                            <p class="mb-0 text-muted">
-                                <span class="text-info me-2">
-                                    <i class="mdi mdi-check-all"></i> Réalisés
-                                </span>
-                            </p>
-                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-2xl font-bold text-gray-900">{{ $appointmentStats['completed'] }}</h3>
+                        <p class="text-gray-600">Terminés</p>
+                        <p class="text-sm text-purple-600">Réalisés</p>
                     </div>
                 </div>
             </div>
@@ -126,153 +95,125 @@
     </div>
 
     <!-- Graphiques -->
-    <div class="row">
-        <div class="col-xl-8">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Évolution des Rendez-vous (6 derniers mois)</h5>
-                    <canvas id="monthlyChart" height="300"></canvas>
-                </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <!-- Évolution des Rendez-vous -->
+        <div class="lg:col-span-2 bg-white shadow-md rounded-lg overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900">Évolution des Rendez-vous (6 derniers mois)</h2>
+            </div>
+            <div class="p-6">
+                <canvas id="monthlyChart" height="300"></canvas>
             </div>
         </div>
 
-        <div class="col-xl-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Statut des Rendez-vous</h5>
-                    <canvas id="statusChart" height="300"></canvas>
-                </div>
+        <!-- Statut des Rendez-vous -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900">Statut des Rendez-vous</h2>
+            </div>
+            <div class="p-6">
+                <canvas id="statusChart" height="300"></canvas>
             </div>
         </div>
     </div>
 
     <!-- Tableau des Statistiques Mensuelles -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Statistiques Mensuelles</h5>
-
-                    <div class="table-responsive">
-                        <table class="table table-centered table-hover mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Mois</th>
-                                    <th>Total</th>
-                                    <th>Confirmés</th>
-                                    <th>Terminés</th>
-                                    <th>Taux de Confirmation</th>
-                                    <th>Taux de Réalisation</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($monthlyAppointments as $stat)
-                                <tr>
-                                    <td>{{ $stat['month'] }}</td>
-                                    <td>
-                                        <span class="badge bg-primary">{{ $stat['total'] }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-success">{{ $stat['confirmed'] }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-info">{{ $stat['completed'] }}</span>
-                                    </td>
-                                    <td>
-                                        @php
-                                            $confirmationRate = $stat['total'] > 0 ? round(($stat['confirmed'] / $stat['total']) * 100, 1) : 0;
-                                        @endphp
-                                        <span class="badge bg-{{ $confirmationRate >= 70 ? 'success' : ($confirmationRate >= 50 ? 'warning' : 'danger') }}">
-                                            {{ $confirmationRate }}%
-                                        </span>
-                                    </td>
-                                    <td>
-                                        @php
-                                            $completionRate = $stat['total'] > 0 ? round(($stat['completed'] / $stat['total']) * 100, 1) : 0;
-                                        @endphp
-                                        <span class="badge bg-{{ $completionRate >= 60 ? 'success' : ($completionRate >= 40 ? 'warning' : 'danger') }}">
-                                            {{ $completionRate }}%
-                                        </span>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+    <div class="bg-white shadow-md rounded-lg overflow-hidden mb-8">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-900">Statistiques Mensuelles</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mois</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Confirmés</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Terminés</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Taux de Confirmation</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Taux de Réalisation</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach($monthlyAppointments as $stat)
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $stat['month'] }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {{ $stat['total'] }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                {{ $stat['confirmed'] }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                {{ $stat['completed'] }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @php
+                                $confirmationRate = $stat['total'] > 0 ? round(($stat['confirmed'] / $stat['total']) * 100, 1) : 0;
+                                $confirmationColor = $confirmationRate >= 70 ? 'green' : ($confirmationRate >= 50 ? 'yellow' : 'red');
+                            @endphp
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ $confirmationColor }}-100 text-{{ $confirmationColor }}-800">
+                                {{ $confirmationRate }}%
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @php
+                                $completionRate = $stat['total'] > 0 ? round(($stat['completed'] / $stat['total']) * 100, 1) : 0;
+                                $completionColor = $completionRate >= 60 ? 'green' : ($completionRate >= 40 ? 'yellow' : 'red');
+                            @endphp
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ $completionColor }}-100 text-{{ $completionColor }}-800">
+                                {{ $completionRate }}%
+                            </span>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     </div>
 
     <!-- Graphique de Performance -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Performance des Rendez-vous</h5>
-                    <canvas id="performanceChart" height="200"></canvas>
-                </div>
-            </div>
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-900">Performance des Rendez-vous</h2>
         </div>
-    </div>
-
-    <!-- Actions -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Actions</h5>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <a href="{{ route('reports.export') }}?type=appointments&format=pdf" class="btn btn-primary me-2">
-                                <i class="mdi mdi-download me-1"></i>
-                                Exporter en PDF
-                            </a>
-                            <a href="{{ route('reports.export') }}?type=appointments&format=excel" class="btn btn-success me-2">
-                                <i class="mdi mdi-file-excel me-1"></i>
-                                Exporter en Excel
-                            </a>
-                        </div>
-                        <div class="col-md-6 text-end">
-                            <a href="{{ route('reports.index') }}" class="btn btn-secondary">
-                                <i class="mdi mdi-arrow-left me-1"></i>
-                                Retour aux Rapports
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="p-6">
+            <canvas id="performanceChart" height="200"></canvas>
         </div>
     </div>
 </div>
 
-@push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 // Graphique mensuel
 const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-const monthlyChart = new Chart(monthlyCtx, {
+new Chart(monthlyCtx, {
     type: 'line',
     data: {
         labels: @json(array_column($monthlyAppointments, 'month')),
         datasets: [{
             label: 'Total',
             data: @json(array_column($monthlyAppointments, 'total')),
-            borderColor: 'rgb(75, 192, 192)',
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
             tension: 0.1
         }, {
             label: 'Confirmés',
             data: @json(array_column($monthlyAppointments, 'confirmed')),
-            borderColor: 'rgb(255, 99, 132)',
-            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            borderColor: 'rgb(34, 197, 94)',
+            backgroundColor: 'rgba(34, 197, 94, 0.1)',
             tension: 0.1
         }, {
             label: 'Terminés',
             data: @json(array_column($monthlyAppointments, 'completed')),
-            borderColor: 'rgb(255, 159, 64)',
-            backgroundColor: 'rgba(255, 159, 64, 0.2)',
+            borderColor: 'rgb(147, 51, 234)',
+            backgroundColor: 'rgba(147, 51, 234, 0.1)',
             tension: 0.1
         }]
     },
@@ -289,7 +230,7 @@ const monthlyChart = new Chart(monthlyCtx, {
 
 // Graphique du statut
 const statusCtx = document.getElementById('statusChart').getContext('2d');
-const statusChart = new Chart(statusCtx, {
+new Chart(statusCtx, {
     type: 'doughnut',
     data: {
         labels: ['En Attente', 'Confirmés', 'Terminés', 'Annulés'],
@@ -301,28 +242,22 @@ const statusChart = new Chart(statusCtx, {
                 {{ $appointmentStats['cancelled'] }}
             ],
             backgroundColor: [
-                'rgba(255, 205, 86, 0.8)',
-                'rgba(75, 192, 192, 0.8)',
-                'rgba(54, 162, 235, 0.8)',
-                'rgba(255, 99, 132, 0.8)'
-            ],
-            borderWidth: 2
+                'rgb(245, 158, 11)',
+                'rgb(34, 197, 94)',
+                'rgb(147, 51, 234)',
+                'rgb(239, 68, 68)'
+            ]
         }]
     },
     options: {
         responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'bottom'
-            }
-        }
+        maintainAspectRatio: false
     }
 });
 
 // Graphique de performance
 const performanceCtx = document.getElementById('performanceChart').getContext('2d');
-const performanceChart = new Chart(performanceCtx, {
+new Chart(performanceCtx, {
     type: 'bar',
     data: {
         labels: @json(array_column($monthlyAppointments, 'month')),
@@ -331,16 +266,16 @@ const performanceChart = new Chart(performanceCtx, {
             data: @json(array_map(function($stat) {
                 return $stat['total'] > 0 ? round(($stat['confirmed'] / $stat['total']) * 100, 1) : 0;
             }, $monthlyAppointments)),
-            backgroundColor: 'rgba(75, 192, 192, 0.8)',
-            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgb(34, 197, 94)',
+            borderColor: 'rgb(34, 197, 94)',
             borderWidth: 1
         }, {
             label: 'Taux de Réalisation (%)',
             data: @json(array_map(function($stat) {
                 return $stat['total'] > 0 ? round(($stat['completed'] / $stat['total']) * 100, 1) : 0;
             }, $monthlyAppointments)),
-            backgroundColor: 'rgba(255, 99, 132, 0.8)',
-            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: 'rgb(147, 51, 234)',
+            borderColor: 'rgb(147, 51, 234)',
             borderWidth: 1
         }]
     },
@@ -356,31 +291,4 @@ const performanceChart = new Chart(performanceCtx, {
     }
 });
 </script>
-@endpush
-
-<style>
-.bg-primary-lighten {
-    background-color: rgba(114, 124, 245, 0.1);
-}
-
-.bg-success-lighten {
-    background-color: rgba(10, 207, 151, 0.1);
-}
-
-.bg-info-lighten {
-    background-color: rgba(57, 175, 209, 0.1);
-}
-
-.bg-warning-lighten {
-    background-color: rgba(255, 188, 0, 0.1);
-}
-
-.avatar-sm {
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-</style>
 @endsection

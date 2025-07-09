@@ -124,8 +124,8 @@
                     @foreach($todayDonations as $donation)
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">{{ $donation->donor->name }}</div>
-                                <div class="text-sm text-gray-500">{{ $donation->donor->email }}</div>
+                                <div class="text-sm font-medium text-gray-900">{{ $donation->donor->full_name }}</div>
+                                <div class="text-sm text-gray-500">{{ $donation->donor->user->email }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">

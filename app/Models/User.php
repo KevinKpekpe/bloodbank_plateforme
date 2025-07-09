@@ -73,6 +73,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the appointments for this user (through donor).
+     */
+    public function appointments()
+    {
+        return $this->hasManyThrough(Appointment::class, Donor::class);
+    }
+
+    /**
+     * Get the donations for this user (through donor).
+     */
+    public function donations()
+    {
+        return $this->hasManyThrough(Donation::class, Donor::class);
+    }
+
+    /**
      * Check if user is a donor.
      */
     public function isDonor(): bool

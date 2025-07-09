@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Bank extends Model
 {
@@ -71,5 +72,24 @@ class Bank extends Model
     public function notifications()
     {
         return $this->hasMany(Notification::class);
+    }
+
+    /**
+     * Get the users associated with this bank (donors who have appointments or donations).
+     */
+    public function users()
+    {
+        // Récupérer les IDs des utilisateurs qui ont des interactions avec cette banque
+        $appointmentUserIds = $this->appointments()
+            ->join('donors', 'appointments.donor_id', '=', 'donors.id')
+            ->pluck('donors.user_id');
+
+        $donationUserIds = $this->donations()
+            ->join('donors', 'donations.donor_id', '=', 'donors.id')
+            ->pluck('donors.user_id');
+
+        $userIds = $appointmentUserIds->merge($donationUserIds)->unique();
+
+        return User::whereIn('id', $userIds);
     }
 }

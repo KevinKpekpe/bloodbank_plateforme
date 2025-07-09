@@ -136,13 +136,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Gestion des dons
     Route::get('/donations', [AdminDonationController::class, 'index'])->name('donations.index');
+    Route::get('/donations/statistics', [AdminDonationController::class, 'statistics'])->name('donations.statistics');
+    Route::get('/donations/inventory', [AdminDonationController::class, 'inventory'])->name('donations.inventory');
     Route::get('/donations/{donation}', [AdminDonationController::class, 'show'])->name('donations.show');
     Route::post('/donations/{donation}/process', [AdminDonationController::class, 'process'])->name('donations.process');
     Route::post('/donations/{donation}/available', [AdminDonationController::class, 'makeAvailable'])->name('donations.available');
     Route::post('/donations/{donation}/expire', [AdminDonationController::class, 'expire'])->name('donations.expire');
     Route::post('/donations/{donation}/use', [AdminDonationController::class, 'use'])->name('donations.use');
-    Route::get('/donations/statistics', [AdminDonationController::class, 'statistics'])->name('donations.statistics');
-    Route::get('/donations/inventory', [AdminDonationController::class, 'inventory'])->name('donations.inventory');
 
     // Gestion des utilisateurs (donneurs de la banque)
     Route::get('/users', function () {

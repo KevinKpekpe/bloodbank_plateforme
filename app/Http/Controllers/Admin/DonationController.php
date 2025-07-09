@@ -200,7 +200,7 @@ class DonationController extends Controller
         // Dons par mois (6 derniers mois)
         $monthlyStats = Donation::where('bank_id', $bank->id)
             ->where('donation_date', '>=', now()->subMonths(6))
-            ->selectRaw('DATE_FORMAT(donation_date, "%Y-%m") as month, COUNT(*) as count, SUM(volume) as total_volume')
+            ->selectRaw('strftime("%Y-%m", donation_date) as month, COUNT(*) as count, SUM(volume) as total_volume')
             ->groupBy('month')
             ->orderBy('month')
             ->get();
@@ -222,25 +222,26 @@ class DonationController extends Controller
     {
         $bank = $this->getAdminBank();
 
-        // Stock disponible par groupe sanguin
-        $inventory = BloodType::with(['donations' => function ($query) use ($bank) {
-            $query->where('bank_id', $bank->id)
-                  ->where('status', 'available');
+        // Stock disponible par groupe sanguin depuis la table blood_stocks
+        $inventory = BloodType::with(['bloodStocks' => function ($query) use ($bank) {
+            $query->where('bank_id', $bank->id);
         }])
         ->get()
         ->map(function ($bloodType) {
+            $stock = $bloodType->bloodStocks->first();
             return [
                 'blood_type' => $bloodType,
-                'available_units' => $bloodType->donations->count(),
-                'total_volume' => $bloodType->donations->sum('volume'),
-                'expiring_soon' => $bloodType->donations->filter(function ($donation) {
-                    return Carbon::parse($donation->available_at)->addDays(35)->isPast();
-                })->count()
+                'available_units' => $stock ? $stock->quantity : 0,
+                'total_volume' => $stock ? $stock->quantity / 1000 : 0, // Convertir ml en litres
+                'critical_level' => $stock ? $stock->critical_level : 0,
+                'is_low' => $stock ? $stock->isLow() : true,
+                'is_critical' => $stock ? $stock->isCritical() : true,
+                'expiring_soon' => 0 // À calculer séparément si nécessaire
             ];
         });
 
-        // Dons expirant bientôt
-        $expiringSoon = Donation::with(['donor', 'bloodType'])
+        // Dons expirant bientôt (pour information)
+        $expiringSoon = Donation::with(['donor.user', 'bloodType'])
             ->where('bank_id', $bank->id)
             ->where('status', 'available')
             ->where('available_at', '<=', now()->subDays(35))

@@ -1,194 +1,140 @@
-@extends('layouts.app')
+@extends('layouts.superadmin')
 
 @section('title', 'Rapports - BloodLink')
+@section('description', 'Rapports et statistiques du système BloodLink')
+@section('page-title', 'Rapports')
 
 @section('content')
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="page-title-box">
-                <div class="page-title-right">
-                    <ol class="breadcrumb m-0">
-                        <li class="breadcrumb-item"><a href="{{ route('superadmin.dashboard') }}">Dashboard</a></li>
-                        <li class="breadcrumb-item active">Rapports</li>
-                    </ol>
-                </div>
-                <h4 class="page-title">
-                    <i class="mdi mdi-chart-line me-1"></i>
-                    Rapports et Statistiques
-                </h4>
-            </div>
-        </div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- En-tête -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Rapports et Statistiques</h1>
+        <p class="mt-2 text-gray-600">Consultez les rapports détaillés de votre système de gestion des banques de sang</p>
     </div>
 
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title mb-4">Sélectionnez un rapport</h5>
-
-                    <div class="row">
-                        <!-- Rapport Général -->
-                        <div class="col-xl-3 col-md-6">
-                            <div class="card report-card">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0">
-                                            <div class="avatar-sm rounded">
-                                                <span class="avatar-title bg-primary-lighten text-primary rounded">
-                                                    <i class="mdi mdi-chart-donut font-20"></i>
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="flex-grow-1 ms-3">
-                                            <h5 class="font-14 my-1">
-                                                <a href="{{ route('reports.general') }}" class="text-body">Rapport Général</a>
-                                            </h5>
-                                            <p class="mb-0 text-muted">
-                                                <span class="text-success me-2">
-                                                    <i class="mdi mdi-arrow-up-bold"></i> Vue d'ensemble
-                                                </span>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+    <!-- Cartes des rapports -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Rapport Général -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-chart-pie text-red-600 text-xl"></i>
                         </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            <a href="{{ route('reports.general') }}" class="hover:text-red-600 transition-colors">
+                                Rapport Général
+                            </a>
+                        </h3>
+                        <p class="text-gray-600 text-sm">Vue d'ensemble du système</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                        <!-- Rapport des Banques -->
-                        <div class="col-xl-3 col-md-6">
-                            <div class="card report-card">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0">
-                                            <div class="avatar-sm rounded">
-                                                <span class="avatar-title bg-success-lighten text-success rounded">
-                                                    <i class="mdi mdi-hospital-building font-20"></i>
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="flex-grow-1 ms-3">
-                                            <h5 class="font-14 my-1">
-                                                <a href="{{ route('reports.banks') }}" class="text-body">Banques de Sang</a>
-                                            </h5>
-                                            <p class="mb-0 text-muted">
-                                                <span class="text-success me-2">
-                                                    <i class="mdi mdi-arrow-up-bold"></i> Performance
-                                                </span>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+        <!-- Rapport des Banques -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-hospital text-blue-600 text-xl"></i>
                         </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            <a href="{{ route('reports.banks') }}" class="hover:text-blue-600 transition-colors">
+                                Banques de Sang
+                            </a>
+                        </h3>
+                        <p class="text-gray-600 text-sm">Performance des banques</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                        <!-- Rapport des Groupes Sanguins -->
-                        <div class="col-xl-3 col-md-6">
-                            <div class="card report-card">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0">
-                                            <div class="avatar-sm rounded">
-                                                <span class="avatar-title bg-warning-lighten text-warning rounded">
-                                                    <i class="mdi mdi-blood-bag font-20"></i>
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="flex-grow-1 ms-3">
-                                            <h5 class="font-14 my-1">
-                                                <a href="{{ route('reports.blood-types') }}" class="text-body">Groupes Sanguins</a>
-                                            </h5>
-                                            <p class="mb-0 text-muted">
-                                                <span class="text-success me-2">
-                                                    <i class="mdi mdi-arrow-up-bold"></i> Disponibilité
-                                                </span>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+        <!-- Rapport des Groupes Sanguins -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-tint text-green-600 text-xl"></i>
                         </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            <a href="{{ route('reports.blood-types') }}" class="hover:text-green-600 transition-colors">
+                                Groupes Sanguins
+                            </a>
+                        </h3>
+                        <p class="text-gray-600 text-sm">Disponibilité des stocks</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                        <!-- Rapport des Rendez-vous -->
-                        <div class="col-xl-3 col-md-6">
-                            <div class="card report-card">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0">
-                                            <div class="avatar-sm rounded">
-                                                <span class="avatar-title bg-info-lighten text-info rounded">
-                                                    <i class="mdi mdi-calendar-check font-20"></i>
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="flex-grow-1 ms-3">
-                                            <h5 class="font-14 my-1">
-                                                <a href="{{ route('reports.appointments') }}" class="text-body">Rendez-vous</a>
-                                            </h5>
-                                            <p class="mb-0 text-muted">
-                                                <span class="text-success me-2">
-                                                    <i class="mdi mdi-arrow-up-bold"></i> Planification
-                                                </span>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+        <!-- Rapport des Rendez-vous -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-calendar-check text-yellow-600 text-xl"></i>
                         </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            <a href="{{ route('reports.appointments') }}" class="hover:text-yellow-600 transition-colors">
+                                Rendez-vous
+                            </a>
+                        </h3>
+                        <p class="text-gray-600 text-sm">Planification et suivi</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                        <!-- Rapport des Dons -->
-                        <div class="col-xl-3 col-md-6">
-                            <div class="card report-card">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0">
-                                            <div class="avatar-sm rounded">
-                                                <span class="avatar-title bg-danger-lighten text-danger rounded">
-                                                    <i class="mdi mdi-heart-pulse font-20"></i>
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="flex-grow-1 ms-3">
-                                            <h5 class="font-14 my-1">
-                                                <a href="{{ route('reports.donations') }}" class="text-body">Dons de Sang</a>
-                                            </h5>
-                                            <p class="mb-0 text-muted">
-                                                <span class="text-success me-2">
-                                                    <i class="mdi mdi-arrow-up-bold"></i> Collecte
-                                                </span>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+        <!-- Rapport des Dons -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-heart text-purple-600 text-xl"></i>
                         </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            <a href="{{ route('reports.donations') }}" class="hover:text-purple-600 transition-colors">
+                                Dons de Sang
+                            </a>
+                        </h3>
+                        <p class="text-gray-600 text-sm">Collecte et statistiques</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                        <!-- Rapport des Utilisateurs -->
-                        <div class="col-xl-3 col-md-6">
-                            <div class="card report-card">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0">
-                                            <div class="avatar-sm rounded">
-                                                <span class="avatar-title bg-secondary-lighten text-secondary rounded">
-                                                    <i class="mdi mdi-account-group font-20"></i>
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="flex-grow-1 ms-3">
-                                            <h5 class="font-14 my-1">
-                                                <a href="{{ route('reports.users') }}" class="text-body">Utilisateurs</a>
-                                            </h5>
-                                            <p class="mb-0 text-muted">
-                                                <span class="text-success me-2">
-                                                    <i class="mdi mdi-arrow-up-bold"></i> Activité
-                                                </span>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+        <!-- Rapport des Utilisateurs -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-users text-indigo-600 text-xl"></i>
                         </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            <a href="{{ route('reports.users') }}" class="hover:text-indigo-600 transition-colors">
+                                Utilisateurs
+                            </a>
+                        </h3>
+                        <p class="text-gray-600 text-sm">Activité des utilisateurs</p>
                     </div>
                 </div>
             </div>
@@ -196,85 +142,37 @@
     </div>
 
     <!-- Statistiques Rapides -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title mb-4">Statistiques Rapides</h5>
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-900">Statistiques Rapides</h2>
+        </div>
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Total des banques -->
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-red-600">{{ \App\Models\Bank::count() }}</div>
+                    <div class="text-gray-600">Banques de sang</div>
+                </div>
 
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="text-center">
-                                <h3 class="text-primary">{{ \App\Models\Bank::count() }}</h3>
-                                <p class="text-muted">Banques de Sang</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="text-center">
-                                <h3 class="text-success">{{ \App\Models\User::where('role', 'donor')->count() }}</h3>
-                                <p class="text-muted">Donneurs</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="text-center">
-                                <h3 class="text-info">{{ \App\Models\Appointment::count() }}</h3>
-                                <p class="text-muted">Rendez-vous</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="text-center">
-                                <h3 class="text-warning">{{ \App\Models\Donation::count() }}</h3>
-                                <p class="text-muted">Dons</p>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Total des utilisateurs -->
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-blue-600">{{ \App\Models\User::count() }}</div>
+                    <div class="text-gray-600">Utilisateurs</div>
+                </div>
+
+                <!-- Total des dons -->
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-green-600">{{ \App\Models\Donation::count() }}</div>
+                    <div class="text-gray-600">Dons effectués</div>
+                </div>
+
+                <!-- Total des rendez-vous -->
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-yellow-600">{{ \App\Models\Appointment::count() }}</div>
+                    <div class="text-gray-600">Rendez-vous</div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-.report-card {
-    transition: transform 0.2s ease-in-out;
-    cursor: pointer;
-}
-
-.report-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.avatar-sm {
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.bg-primary-lighten {
-    background-color: rgba(114, 124, 245, 0.1);
-}
-
-.bg-success-lighten {
-    background-color: rgba(10, 207, 151, 0.1);
-}
-
-.bg-warning-lighten {
-    background-color: rgba(255, 188, 0, 0.1);
-}
-
-.bg-info-lighten {
-    background-color: rgba(57, 175, 209, 0.1);
-}
-
-.bg-danger-lighten {
-    background-color: rgba(250, 92, 124, 0.1);
-}
-
-.bg-secondary-lighten {
-    background-color: rgba(108, 117, 125, 0.1);
-}
-</style>
 @endsection

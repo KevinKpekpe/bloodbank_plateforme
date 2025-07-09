@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Donation;
 use App\Models\BloodType;
+use App\Models\BloodStock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -173,7 +174,7 @@ class AppointmentController extends Controller
         ]);
 
         // Mettre à jour le stock de la banque
-        $stock = \App\Models\BloodStock::firstOrCreate([
+        $stock = BloodStock::firstOrCreate([
             'bank_id' => $appointment->bank_id,
             'blood_type_id' => $blood_type_id
         ]);

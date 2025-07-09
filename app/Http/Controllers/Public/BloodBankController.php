@@ -31,8 +31,11 @@ class BloodBankController extends Controller
 
         // Formater les données pour l'affichage
         $banks->each(function ($bank) {
-            $bank->total_stocks = $bank->bloodStocks->sum('quantity');
-            $bank->critical_stocks = $bank->bloodStocks->where('status', 'critical')->count();
+            $totalQuantity = $bank->bloodStocks->sum('quantity');
+            $bank->total_stocks = number_format($totalQuantity / 1000, 1) . 'L'; // Convertir en litres
+            $bank->critical_stocks = $bank->bloodStocks->filter(function ($stock) {
+                return $stock->quantity <= $stock->critical_level;
+            })->count();
         });
 
         return view('public.blood-banks', compact('banks'));
