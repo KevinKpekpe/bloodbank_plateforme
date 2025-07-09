@@ -92,19 +92,19 @@
                     <dl class="space-y-3">
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Nom</dt>
-                            <dd class="text-sm text-gray-900">{{ $donation->donor->name }}</dd>
+                            <dd class="text-sm text-gray-900">{{ $donation->donor->full_name }}</dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Email</dt>
-                            <dd class="text-sm text-gray-900">{{ $donation->donor->email }}</dd>
+                            <dd class="text-sm text-gray-900">{{ $donation->donor->user->email }}</dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Téléphone</dt>
-                            <dd class="text-sm text-gray-900">{{ $donation->donor->phone }}</dd>
+                            <dd class="text-sm text-gray-900">{{ $donation->donor->phone_number }}</dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Date de naissance</dt>
-                            <dd class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($donation->donor->birth_date)->format('d/m/Y') }}</dd>
+                            <dd class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($donation->donor->birthdate)->format('d/m/Y') }}</dd>
                         </div>
                     </dl>
                 </div>

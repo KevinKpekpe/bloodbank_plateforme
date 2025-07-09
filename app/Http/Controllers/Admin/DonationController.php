@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Donation;
 use App\Models\BloodType;
 use App\Models\Appointment;
-use App\Models\BankAdmin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -19,13 +18,13 @@ class DonationController extends Controller
     private function getAdminBank()
     {
         $user = Auth::user();
-        $bankAdmin = BankAdmin::where('user_id', $user->id)->first();
+        $bank = $user->managedBank;
 
-        if (!$bankAdmin) {
+        if (!$bank) {
             abort(403, 'Vous n\'êtes pas associé à une banque de sang.');
         }
 
-        return $bankAdmin->bank;
+        return $bank;
     }
 
     /**
@@ -35,7 +34,7 @@ class DonationController extends Controller
     {
         $bank = $this->getAdminBank();
 
-        $query = Donation::with(['donor', 'bloodType'])
+        $query = Donation::with(['donor.user', 'bloodType'])
             ->where('bank_id', $bank->id);
 
         // Filtres
@@ -76,7 +75,7 @@ class DonationController extends Controller
             abort(403);
         }
 
-        $donation->load(['donor', 'bloodType', 'appointment']);
+        $donation->load(['donor.user', 'bloodType', 'appointment']);
 
         return view('admin.donations.show', compact('donation'));
     }
@@ -207,7 +206,7 @@ class DonationController extends Controller
             ->get();
 
         // Dons du jour
-        $todayDonations = Donation::with(['donor', 'bloodType'])
+        $todayDonations = Donation::with(['donor.user', 'bloodType'])
             ->where('bank_id', $bank->id)
             ->whereDate('donation_date', today())
             ->orderBy('donation_date', 'desc')

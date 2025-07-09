@@ -10,11 +10,10 @@
 </div>
 
 @php
-    $bankAdmins = Auth::user()->bankAdmins;
-    $managedBanks = $bankAdmins->pluck('bank');
+    $bank = Auth::user()->managedBank;
 @endphp
 
-@if($managedBanks->count() > 0)
+@if($bank)
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="bg-white p-6 rounded-lg shadow-md">
             <div class="flex items-center">
@@ -24,12 +23,11 @@
                     </svg>
                 </div>
                 <div class="ml-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Banques Gérées</h3>
-                    <p class="text-2xl font-bold text-blue-600">{{ $managedBanks->count() }}</p>
+                    <h3 class="text-lg font-semibold text-gray-900">Banque Gérée</h3>
+                    <p class="text-2xl font-bold text-blue-600">1</p>
                 </div>
             </div>
         </div>
-
         <div class="bg-white p-6 rounded-lg shadow-md">
             <div class="flex items-center">
                 <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -40,13 +38,12 @@
                 <div class="ml-4">
                     <h3 class="text-lg font-semibold text-gray-900">Stocks Totaux</h3>
                     @php
-                        $totalStocks = \App\Models\BloodStock::whereIn('bank_id', $managedBanks->pluck('id'))->sum('quantity');
+                        $totalStocks = \App\Models\BloodStock::where('bank_id', $bank->id)->sum('quantity');
                     @endphp
                     <p class="text-2xl font-bold text-green-600">{{ $totalStocks }}</p>
                 </div>
             </div>
         </div>
-
         <div class="bg-white p-6 rounded-lg shadow-md">
             <div class="flex items-center">
                 <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
@@ -57,7 +54,7 @@
                 <div class="ml-4">
                     <h3 class="text-lg font-semibold text-gray-900">Stocks Critiques</h3>
                     @php
-                        $criticalStocks = \App\Models\BloodStock::whereIn('bank_id', $managedBanks->pluck('id'))
+                        $criticalStocks = \App\Models\BloodStock::where('bank_id', $bank->id)
                             ->where('status', 'critical')
                             ->count();
                     @endphp
@@ -66,24 +63,18 @@
             </div>
         </div>
     </div>
-
     <div class="bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4">Banques sous votre gestion</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            @foreach($bankAdmins as $bankAdmin)
-                <div class="border border-gray-200 rounded-lg p-4">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="font-semibold text-gray-900">{{ $bankAdmin->bank->name }}</h3>
-                            <p class="text-sm text-gray-600">{{ $bankAdmin->bank->address }}</p>
-                            <p class="text-sm text-gray-500">Rôle: {{ ucfirst($bankAdmin->role) }}</p>
-                        </div>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            {{ $bankAdmin->bank->status }}
-                        </span>
-                    </div>
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Votre banque</h2>
+        <div class="border border-gray-200 rounded-lg p-4">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h3 class="font-semibold text-gray-900">{{ $bank->name }}</h3>
+                    <p class="text-sm text-gray-600">{{ $bank->address }}</p>
                 </div>
-            @endforeach
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    {{ $bank->status }}
+                </span>
+            </div>
         </div>
     </div>
 @else

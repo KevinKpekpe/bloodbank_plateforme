@@ -16,7 +16,7 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::with('bank');
+        $query = User::with('managedBank');
 
         // Filtres
         if ($request->filled('search')) {
@@ -29,7 +29,9 @@ class UserController extends Controller
         }
 
         if ($request->filled('bank_id')) {
-            $query->where('bank_id', $request->bank_id);
+            $query->whereHas('managedBank', function($q) use ($request) {
+                $q->where('id', $request->bank_id);
+            });
         }
 
         $users = $query->orderBy('name')->paginate(15);
@@ -56,8 +58,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users',
             'phone' => 'required|string|max:20',
-            'role' => 'required|in:donor,admin',
-            'bank_id' => 'required_if:role,admin|nullable|exists:banks,id',
+            'role' => 'required|in:donor,admin_banque',
             'password' => 'required|string|min:8|confirmed',
             'birth_date' => 'required_if:role,donor|nullable|date|before:today',
             'blood_type_id' => 'required_if:role,donor|nullable|exists:blood_types,id'
@@ -66,15 +67,13 @@ class UserController extends Controller
         $userData = [
             'name' => $request->name,
             'email' => $request->email,
-            'phone' => $request->phone,
+            'phone_number' => $request->phone,
             'role' => $request->role,
             'password' => Hash::make($request->password),
             'email_verified_at' => now()
         ];
 
-        if ($request->role === 'admin') {
-            $userData['bank_id'] = $request->bank_id;
-        } else {
+        if ($request->role === 'donor') {
             $userData['birth_date'] = $request->birth_date;
             $userData['blood_type_id'] = $request->blood_type_id;
         }
@@ -90,7 +89,7 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        $user->load(['bank', 'bloodType', 'appointments', 'donations']);
+        $user->load(['managedBank', 'bloodType', 'appointments', 'donations']);
 
         return view('superadmin.users.show', compact('user'));
     }
@@ -113,8 +112,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
             'phone' => 'required|string|max:20',
-            'role' => 'required|in:donor,admin',
-            'bank_id' => 'required_if:role,admin|nullable|exists:banks,id',
+            'role' => 'required|in:donor,admin_banque',
             'birth_date' => 'required_if:role,donor|nullable|date|before:today',
             'blood_type_id' => 'required_if:role,donor|nullable|exists:blood_types,id'
         ]);
@@ -122,18 +120,16 @@ class UserController extends Controller
         $userData = [
             'name' => $request->name,
             'email' => $request->email,
-            'phone' => $request->phone,
+            'phone_number' => $request->phone,
             'role' => $request->role
         ];
 
-        if ($request->role === 'admin') {
-            $userData['bank_id'] = $request->bank_id;
-            $userData['birth_date'] = null;
-            $userData['blood_type_id'] = null;
-        } else {
-            $userData['bank_id'] = null;
+        if ($request->role === 'donor') {
             $userData['birth_date'] = $request->birth_date;
             $userData['blood_type_id'] = $request->blood_type_id;
+        } else {
+            $userData['birth_date'] = null;
+            $userData['blood_type_id'] = null;
         }
 
         $user->update($userData);

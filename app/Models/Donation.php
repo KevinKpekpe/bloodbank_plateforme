@@ -18,6 +18,7 @@ class Donation extends Model
         'quantity',
         'volume',
         'status',
+        'notes',
     ];
 
     protected $casts = [

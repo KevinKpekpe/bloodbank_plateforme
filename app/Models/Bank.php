@@ -34,19 +34,11 @@ class Bank extends Model
     }
 
     /**
-     * Get the bank admins for this bank.
+     * Admin de cette banque.
      */
-    public function bankAdmins()
+    public function admin()
     {
-        return $this->hasMany(BankAdmin::class);
-    }
-
-    /**
-     * Get the admins for this bank.
-     */
-    public function admins()
-    {
-        return $this->belongsToMany(User::class, 'bank_admins');
+        return $this->belongsTo(User::class, 'admin_id');
     }
 
     /**

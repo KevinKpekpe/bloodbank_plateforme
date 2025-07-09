@@ -61,7 +61,17 @@ class BankController extends Controller
             'admin_password' => 'required|string|min:8|confirmed'
         ]);
 
-        // Créer la banque
+        // Créer l'administrateur de la banque
+        $admin = User::create([
+            'name' => $request->admin_name,
+            'email' => $request->admin_email,
+            'phone_number' => $request->admin_phone,
+            'password' => Hash::make($request->admin_password),
+            'role' => 'admin_banque',
+            'email_verified_at' => now()
+        ]);
+
+        // Créer la banque en associant l'admin
         $bank = Bank::create([
             'name' => $request->name,
             'address' => $request->address,
@@ -69,18 +79,8 @@ class BankController extends Controller
             'contact_email' => $request->contact_email,
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
-            'status' => 'active'
-        ]);
-
-        // Créer l'administrateur de la banque
-        $admin = User::create([
-            'name' => $request->admin_name,
-            'email' => $request->admin_email,
-            'phone' => $request->admin_phone,
-            'password' => Hash::make($request->admin_password),
-            'role' => 'admin',
-            'bank_id' => $bank->id,
-            'email_verified_at' => now()
+            'status' => 'active',
+            'admin_id' => $admin->id
         ]);
 
         return redirect()->route('superadmin.banks.index')
@@ -92,11 +92,11 @@ class BankController extends Controller
      */
     public function show(Bank $bank)
     {
-        $bank->load(['users', 'appointments', 'donations']);
+        $bank->load(['admin', 'appointments', 'donations']);
 
         // Statistiques de la banque
         $stats = [
-            'total_users' => $bank->users()->count(),
+            'admin' => $bank->admin,
             'total_appointments' => $bank->appointments()->count(),
             'total_donations' => $bank->donations()->count(),
             'pending_appointments' => $bank->appointments()->where('status', 'pending')->count(),
@@ -140,9 +140,14 @@ class BankController extends Controller
      */
     public function destroy(Bank $bank)
     {
-        // Vérifier qu'il n'y a pas d'utilisateurs ou de données associées
-        if ($bank->users()->count() > 0 || $bank->appointments()->count() > 0 || $bank->donations()->count() > 0) {
+        // Vérifier qu'il n'y a pas de données associées
+        if ($bank->appointments()->count() > 0 || $bank->donations()->count() > 0) {
             return back()->with('error', 'Impossible de supprimer cette banque car elle contient des données associées.');
+        }
+
+        // Supprimer l'admin associé
+        if ($bank->admin) {
+            $bank->admin->delete();
         }
 
         $bank->delete();
@@ -161,7 +166,7 @@ class BankController extends Controller
             'active_banks' => Bank::where('status', 'active')->count(),
             'total_users' => User::count(),
             'total_donors' => User::where('role', 'donor')->count(),
-            'total_admins' => User::where('role', 'admin')->count(),
+            'total_admins' => User::where('role', 'admin_banque')->count(),
             'total_appointments' => Appointment::count(),
             'total_donations' => Donation::count(),
             'available_donations' => Donation::where('status', 'available')->count()

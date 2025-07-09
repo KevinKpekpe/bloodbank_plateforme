@@ -57,19 +57,11 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the bank admins for the user.
+     * Banque administrée par cet utilisateur.
      */
-    public function bankAdmins()
+    public function managedBank()
     {
-        return $this->hasMany(BankAdmin::class);
-    }
-
-    /**
-     * Get the banks that the user administers.
-     */
-    public function banks()
-    {
-        return $this->belongsToMany(Bank::class, 'bank_admins');
+        return $this->hasOne(Bank::class, 'admin_id');
     }
 
     /**

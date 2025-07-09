@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Donation;
 use App\Models\BloodType;
-use App\Models\BankAdmin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -19,13 +18,13 @@ class AppointmentController extends Controller
     private function getAdminBank()
     {
         $user = Auth::user();
-        $bankAdmin = BankAdmin::where('user_id', $user->id)->first();
+        $bank = $user->managedBank;
 
-        if (!$bankAdmin) {
+        if (!$bank) {
             abort(403, 'Vous n\'êtes pas associé à une banque de sang.');
         }
 
-        return $bankAdmin->bank;
+        return $bank;
     }
 
     /**
@@ -150,22 +149,36 @@ class AppointmentController extends Controller
         }
 
         $request->validate([
-            'blood_type_id' => 'required|exists:blood_types,id',
             'volume' => 'required|numeric|min:0.3|max:0.5',
             'notes' => 'nullable|string|max:500'
         ]);
+
+        // Récupérer le groupe sanguin du donneur
+        $blood_type_id = $appointment->donor->blood_type_id;
+        if (!$blood_type_id) {
+            return back()->with('error', 'Le groupe sanguin du donneur est manquant.');
+        }
 
         // Créer le don
         $donation = Donation::create([
             'donor_id' => $appointment->donor_id,
             'bank_id' => $appointment->bank_id,
             'appointment_id' => $appointment->id,
-            'blood_type_id' => $request->blood_type_id,
+            'blood_type_id' => $blood_type_id,
             'volume' => $request->volume,
+            'quantity' => $request->volume * 1000, // Convertir litres en ml
             'donation_date' => now(),
             'status' => 'collected',
             'notes' => $request->notes
         ]);
+
+        // Mettre à jour le stock de la banque
+        $stock = \App\Models\BloodStock::firstOrCreate([
+            'bank_id' => $appointment->bank_id,
+            'blood_type_id' => $blood_type_id
+        ]);
+        $stock->quantity += $donation->quantity;
+        $stock->save();
 
         // Marquer le rendez-vous comme terminé
         $appointment->update([

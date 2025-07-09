@@ -241,21 +241,11 @@
             <form method="POST" action="{{ route('admin.appointments.complete', $appointment->id) }}">
                 @csrf
                 <div class="mb-4">
-                    <label for="blood_type_id" class="block text-sm font-medium text-gray-700 mb-2">
-                        Groupe sanguin *
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Groupe sanguin du donneur
                     </label>
-                    <select id="blood_type_id" name="blood_type_id" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500">
-                        <option value="">Sélectionnez le groupe sanguin</option>
-                        <option value="1">A+</option>
-                        <option value="2">A-</option>
-                        <option value="3">B+</option>
-                        <option value="4">B-</option>
-                        <option value="5">AB+</option>
-                        <option value="6">AB-</option>
-                        <option value="7">O+</option>
-                        <option value="8">O-</option>
-                    </select>
+                    <input type="text" value="{{ $appointment->donor->bloodType->name ?? 'Non renseigné' }}" readonly
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100">
                 </div>
                 <div class="mb-4">
                     <label for="volume" class="block text-sm font-medium text-gray-700 mb-2">

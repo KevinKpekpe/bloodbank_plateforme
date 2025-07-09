@@ -110,10 +110,10 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm font-medium text-gray-900">
-                                        {{ $donation->donor->name }}
+                                        {{ $donation->donor->full_name }}
                                     </div>
                                     <div class="text-sm text-gray-500">
-                                        {{ $donation->donor->email }}
+                                        {{ $donation->donor->user->email }}
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
