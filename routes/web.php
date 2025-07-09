@@ -12,6 +12,7 @@ use App\Http\Controllers\Donor\AppointmentController;
 use App\Http\Controllers\Donor\DonationController;
 use App\Http\Controllers\Admin\AppointmentController as AdminAppointmentController;
 use App\Http\Controllers\Admin\DonationController as AdminDonationController;
+use App\Http\Controllers\Admin\BankAdminController;
 use App\Http\Controllers\SuperAdmin\BankController;
 use App\Http\Controllers\SuperAdmin\UserController;
 use App\Http\Controllers\NotificationController;
@@ -148,6 +149,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/users', function () {
         return view('admin.users');
     })->name('users');
+
+    // Gestion des administrateurs de la banque
+    Route::resource('bank-admins', BankAdminController::class)->parameters(['bank-admins' => 'bank_admin']);
+    Route::post('/bank-admins/{bank_admin}/toggle-status', [BankAdminController::class, 'toggleStatus'])->name('bank-admins.toggle-status');
 });
 
 /*
@@ -165,6 +170,7 @@ Route::middleware(['auth', 'superadmin'])->prefix('superadmin')->name('superadmi
     // Gestion des banques de sang
     Route::resource('banks', BankController::class);
     Route::get('/banks/{bank}/statistics', [BankController::class, 'statistics'])->name('banks.statistics');
+    Route::post('/banks/{bank}/toggle-status', [BankController::class, 'toggleStatus'])->name('banks.toggle-status');
 
     // Gestion des utilisateurs
     Route::resource('users', UserController::class);

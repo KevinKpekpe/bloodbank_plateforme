@@ -95,7 +95,7 @@
                                     <div class="ml-4">
                                         <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
                                         <div class="text-sm text-gray-500">{{ $user->email }}</div>
-                                        <div class="text-sm text-gray-500">{{ $user->phone }}</div>
+                                        <div class="text-sm text-gray-500">{{ $user->phone_number }}</div>
                                     </div>
                                 </div>
                             </td>
@@ -123,15 +123,15 @@
                                 @endswitch
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($user->bank)
-                                    <div class="text-sm text-gray-900">{{ $user->bank->name }}</div>
-                                    <div class="text-sm text-gray-500">{{ $user->bank->address }}</div>
+                                @if($user->managedBank)
+                                    <div class="text-sm text-gray-900">{{ $user->managedBank->name }}</div>
+                                    <div class="text-sm text-gray-500">{{ $user->managedBank->address }}</div>
                                 @else
                                     <span class="text-sm text-gray-500">-</span>
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($user->email_verified_at)
+                                @if($user->status === 'active')
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                         <i class="fas fa-check mr-1"></i>Actif
                                     </span>
@@ -155,8 +155,8 @@
                                         @csrf
                                         <button type="submit"
                                                 class="text-yellow-600 hover:text-yellow-900"
-                                                title="{{ $user->email_verified_at ? 'Désactiver' : 'Activer' }}">
-                                            <i class="fas fa-{{ $user->email_verified_at ? 'ban' : 'check' }}"></i>
+                                                title="{{ $user->status === 'active' ? 'Désactiver' : 'Activer' }}">
+                                            <i class="fas fa-{{ $user->status === 'active' ? 'ban' : 'check' }}"></i>
                                         </button>
                                     </form>
                                     @if($user->appointments()->count() === 0 && $user->donations()->count() === 0)

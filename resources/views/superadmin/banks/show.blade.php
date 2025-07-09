@@ -150,6 +150,21 @@
                     <p class="text-sm text-gray-500">Éditer les informations</p>
                 </div>
             </a>
+            <form method="POST" action="{{ route('superadmin.banks.toggle-status', $bank) }}" class="inline">
+                @csrf
+                <button type="submit"
+                        class="w-full flex items-center p-4 border {{ $bank->status === 'active' ? 'border-yellow-200 hover:bg-yellow-50' : 'border-green-200 hover:bg-green-50' }} rounded-lg text-left">
+                    <i class="fas {{ $bank->status === 'active' ? 'fa-ban text-yellow-600' : 'fa-check text-green-600' }} text-2xl mr-3"></i>
+                    <div>
+                        <h3 class="font-medium {{ $bank->status === 'active' ? 'text-yellow-900' : 'text-green-900' }}">
+                            {{ $bank->status === 'active' ? 'Désactiver' : 'Activer' }} la banque
+                        </h3>
+                        <p class="text-sm {{ $bank->status === 'active' ? 'text-yellow-500' : 'text-green-500' }}">
+                            {{ $bank->status === 'active' ? 'Mettre en pause' : 'Réactiver' }}
+                        </p>
+                    </div>
+                </button>
+            </form>
             @if($bank->users_count === 0 && $bank->appointments_count === 0 && $bank->donations_count === 0)
                 <form method="POST" action="{{ route('superadmin.banks.destroy', $bank) }}" class="inline">
                     @csrf

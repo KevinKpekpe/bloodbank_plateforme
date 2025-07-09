@@ -69,6 +69,7 @@ class UserController extends Controller
             'phone_number' => $request->phone,
             'role' => $request->role,
             'password' => Hash::make($request->password),
+            'status' => 'active',
             'email_verified_at' => now()
         ]);
 
@@ -141,10 +142,10 @@ class UserController extends Controller
     public function toggleStatus(User $user)
     {
         $user->update([
-            'email_verified_at' => $user->email_verified_at ? null : now()
+            'status' => $user->status === 'active' ? 'inactive' : 'active'
         ]);
 
-        $status = $user->email_verified_at ? 'activé' : 'désactivé';
+        $status = $user->status === 'active' ? 'activé' : 'désactivé';
         return back()->with('success', "Utilisateur {$status} avec succès.");
     }
 }

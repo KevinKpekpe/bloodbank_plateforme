@@ -88,7 +88,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900">{{ $bank->users_count }} utilisateurs</div>
-                                <div class="text-sm text-gray-500">{{ $bank->users()->where('role', 'admin')->count() }} admins</div>
+                                <div class="text-sm text-gray-500">{{ $bank->admins_count }} admins</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900">{{ $bank->appointments_count }} RDV</div>
@@ -108,23 +108,32 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex space-x-2">
                                     <a href="{{ route('superadmin.banks.show', $bank) }}"
-                                       class="text-blue-600 hover:text-blue-900">
+                                       class="text-blue-600 hover:text-blue-900" title="Voir">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     <a href="{{ route('superadmin.banks.edit', $bank) }}"
-                                       class="text-green-600 hover:text-green-900">
+                                       class="text-green-600 hover:text-green-900" title="Modifier">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     <a href="{{ route('superadmin.banks.statistics', $bank) }}"
-                                       class="text-purple-600 hover:text-purple-900">
+                                       class="text-purple-600 hover:text-purple-900" title="Statistiques">
                                         <i class="fas fa-chart-bar"></i>
                                     </a>
+                                    <form method="POST" action="{{ route('superadmin.banks.toggle-status', $bank) }}" class="inline">
+                                        @csrf
+                                        <button type="submit"
+                                                class="text-yellow-600 hover:text-yellow-900"
+                                                title="{{ $bank->status === 'active' ? 'Désactiver' : 'Activer' }}">
+                                            <i class="fas fa-{{ $bank->status === 'active' ? 'ban' : 'check' }}"></i>
+                                        </button>
+                                    </form>
                                     @if($bank->users_count === 0 && $bank->appointments_count === 0 && $bank->donations_count === 0)
                                         <form method="POST" action="{{ route('superadmin.banks.destroy', $bank) }}" class="inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-red-600 hover:text-red-900"
-                                                    onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette banque ?')">
+                                                    onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette banque ?')"
+                                                    title="Supprimer">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>

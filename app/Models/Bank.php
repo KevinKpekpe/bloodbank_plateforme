@@ -19,6 +19,7 @@ class Bank extends Model
         'contact_email',
         'status',
         'created_by',
+        'admin_id',
     ];
 
     protected $casts = [

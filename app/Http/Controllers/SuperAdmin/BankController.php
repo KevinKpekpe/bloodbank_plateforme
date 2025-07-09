@@ -36,6 +36,11 @@ class BankController extends Controller
         foreach ($banks as $bank) {
             $userIds = collect();
 
+            // Ajouter l'administrateur de la banque
+            if ($bank->admin_id) {
+                $userIds->push($bank->admin_id);
+            }
+
             // Utilisateurs avec des rendez-vous
             $appointmentUserIds = $bank->appointments()
                 ->join('donors', 'appointments.donor_id', '=', 'donors.id')
@@ -47,7 +52,10 @@ class BankController extends Controller
                 ->pluck('donors.user_id');
 
             // Combiner et dédupliquer
-            $bank->users_count = $appointmentUserIds->merge($donationUserIds)->unique()->count();
+            $bank->users_count = $userIds->merge($appointmentUserIds)->merge($donationUserIds)->unique()->count();
+
+            // Compter les administrateurs (1 si la banque a un admin, 0 sinon)
+            $bank->admins_count = $bank->admin_id ? 1 : 0;
         }
 
         return view('superadmin.banks.index', compact('banks'));
@@ -86,6 +94,7 @@ class BankController extends Controller
             'phone_number' => $request->admin_phone,
             'password' => Hash::make($request->admin_password),
             'role' => 'admin_banque',
+            'status' => 'active',
             'email_verified_at' => now()
         ]);
 
@@ -98,7 +107,8 @@ class BankController extends Controller
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
             'status' => 'active',
-            'admin_id' => $admin->id
+            'admin_id' => $admin->id,
+            'created_by' => \Illuminate\Support\Facades\Auth::user()->id
         ]);
 
         return redirect()->route('superadmin.banks.index')
@@ -172,6 +182,19 @@ class BankController extends Controller
 
         return redirect()->route('superadmin.banks.index')
             ->with('success', 'Banque de sang supprimée avec succès.');
+    }
+
+    /**
+     * Activer/Désactiver une banque
+     */
+    public function toggleStatus(Bank $bank)
+    {
+        $bank->update([
+            'status' => $bank->status === 'active' ? 'inactive' : 'active'
+        ]);
+
+        $status = $bank->status === 'active' ? 'activée' : 'désactivée';
+        return back()->with('success', "Banque {$status} avec succès.");
     }
 
     /**

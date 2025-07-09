@@ -56,7 +56,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-500 mb-1">Statut</label>
-                            @if($user->email_verified_at)
+                            @if($user->status === 'active')
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                     <i class="fas fa-check-circle mr-1"></i>
                                     Actif
@@ -116,9 +116,9 @@
                     <form method="POST" action="{{ route('superadmin.users.toggle-status', $user) }}" class="w-full">
                         @csrf
                         <button type="submit"
-                                class="w-full {{ $user->email_verified_at ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-green-600 hover:bg-green-700' }} text-white px-4 py-2 rounded-md transition-colors flex items-center justify-center">
-                            <i class="fas {{ $user->email_verified_at ? 'fa-ban' : 'fa-check' }} mr-2"></i>
-                            {{ $user->email_verified_at ? 'Désactiver' : 'Activer' }}
+                                class="w-full {{ $user->status === 'active' ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-green-600 hover:bg-green-700' }} text-white px-4 py-2 rounded-md transition-colors flex items-center justify-center">
+                            <i class="fas {{ $user->status === 'active' ? 'fa-ban' : 'fa-check' }} mr-2"></i>
+                            {{ $user->status === 'active' ? 'Désactiver' : 'Activer' }}
                         </button>
                     </form>
 
