@@ -7,6 +7,9 @@ use App\Http\Controllers\Public\AboutController;
 use App\Http\Controllers\Public\ContactController;
 use App\Http\Controllers\Public\PartnershipController;
 use App\Http\Controllers\Public\BloodBankController;
+use App\Http\Controllers\Donor\DonorController;
+use App\Http\Controllers\Donor\AppointmentController;
+use App\Http\Controllers\Donor\DonationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -49,21 +52,25 @@ Route::middleware('auth')->group(function () {
 */
 
 Route::middleware(['auth', 'donor'])->prefix('donor')->name('donor.')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('donor.dashboard');
-    })->name('dashboard');
+    // Dashboard et profil
+    Route::get('/dashboard', [DonorController::class, 'dashboard'])->name('dashboard');
+    Route::get('/profile', [DonorController::class, 'profile'])->name('profile');
+    Route::put('/profile', [DonorController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/statistics', [DonorController::class, 'statistics'])->name('statistics');
 
-    Route::get('/profile', function () {
-        return view('donor.profile');
-    })->name('profile');
+    // Rendez-vous
+    Route::get('/appointments', [AppointmentController::class, 'index'])->name('appointments.index');
+    Route::get('/appointments/create', [AppointmentController::class, 'create'])->name('appointments.create');
+    Route::post('/appointments', [AppointmentController::class, 'store'])->name('appointments.store');
+    Route::get('/appointments/{appointment}', [AppointmentController::class, 'show'])->name('appointments.show');
+    Route::delete('/appointments/{appointment}/cancel', [AppointmentController::class, 'cancel'])->name('appointments.cancel');
+    Route::get('/appointments/calendar', [AppointmentController::class, 'calendar'])->name('appointments.calendar');
 
-    Route::get('/appointments', function () {
-        return view('donor.appointments');
-    })->name('appointments');
-
-    Route::get('/donations', function () {
-        return view('donor.donations');
-    })->name('donations');
+    // Dons (historique)
+    Route::get('/donations', [DonationController::class, 'index'])->name('donations.index');
+    Route::get('/donations/{id}', [DonationController::class, 'show'])->name('donations.show');
+    Route::get('/donations/{id}/certificate', [DonationController::class, 'certificate'])->name('donations.certificate');
+    Route::get('/donations/statistics', [DonationController::class, 'statistics'])->name('donations.statistics');
 });
 
 /*
