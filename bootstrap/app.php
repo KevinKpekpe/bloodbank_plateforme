@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'donor' => \App\Http\Middleware\CheckDonor::class,
             'admin' => \App\Http\Middleware\CheckAdmin::class,
             'superadmin' => \App\Http\Middleware\CheckSuperAdmin::class,
+            'verified.email' => \App\Http\Middleware\EnsureEmailIsVerified::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

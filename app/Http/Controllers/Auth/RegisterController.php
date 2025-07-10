@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Mail\EmailVerificationMail;
 use App\Models\BloodType;
 use App\Models\Donor;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules\Password;
 
 class RegisterController extends Controller
@@ -47,7 +49,7 @@ class RegisterController extends Controller
             'password' => Hash::make($request->password),
             'role' => 'donor',
             'phone_number' => $request->phone_number,
-            'email_verified_at' => now(), // Auto-verification pour simplifier
+            'email_verified_at' => null, // Pas d'auto-vérification
         ]);
 
         // Créer le donneur
@@ -62,10 +64,14 @@ class RegisterController extends Controller
             'phone_number' => $request->phone_number,
         ]);
 
+        // Générer et envoyer le code de vérification
+        $verificationCode = $user->generateVerificationCode();
+        Mail::to($user->email)->send(new EmailVerificationMail($user, $verificationCode));
+
         // Connecter l'utilisateur
         Auth::login($user);
 
-        return redirect()->route('donor.dashboard')
-            ->with('success', 'Compte créé avec succès ! Bienvenue sur BloodLink.');
+        return redirect()->route('verification.notice')
+            ->with('success', 'Compte créé avec succès ! Veuillez vérifier votre adresse email pour activer votre compte.');
     }
 }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\AboutController;
 use App\Http\Controllers\Public\ContactController;
@@ -89,11 +90,24 @@ Route::middleware('auth')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
+| Routes de Vérification d'Email
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth')->group(function () {
+    Route::get('/email/verify', [EmailVerificationController::class, 'show'])->name('verification.notice');
+    Route::get('/email/verify/code', [EmailVerificationController::class, 'showVerificationForm'])->name('verification.code');
+    Route::post('/email/verify', [EmailVerificationController::class, 'verify'])->name('verification.verify');
+    Route::post('/email/verify/resend', [EmailVerificationController::class, 'resend'])->name('verification.resend');
+});
+
+/*
+|--------------------------------------------------------------------------
 | Routes Donneur
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'donor'])->prefix('donor')->name('donor.')->group(function () {
+Route::middleware(['auth', 'donor', 'verified.email'])->prefix('donor')->name('donor.')->group(function () {
     // Dashboard et profil
     Route::get('/dashboard', [DonorController::class, 'dashboard'])->name('dashboard');
     Route::get('/profile', [DonorController::class, 'profile'])->name('profile');
