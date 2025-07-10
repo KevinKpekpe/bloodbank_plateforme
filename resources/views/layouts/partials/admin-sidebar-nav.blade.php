@@ -65,9 +65,9 @@
     </a>
 
     <!-- Stocks -->
-    <a href="{{ route('admin.donations.inventory') }}"
-       class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ $currentRoute === 'admin.donations.inventory' ? 'bg-red-100 text-red-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
-        <svg class="mr-3 h-6 w-6 {{ $currentRoute === 'admin.donations.inventory' ? 'text-red-500' : 'text-gray-400 group-hover:text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <a href="{{ route('admin.stocks.index') }}"
+       class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ str_starts_with($currentRoute, 'admin.stocks') ? 'bg-red-100 text-red-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+        <svg class="mr-3 h-6 w-6 {{ str_starts_with($currentRoute, 'admin.stocks') ? 'text-red-500' : 'text-gray-400 group-hover:text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         Stocks

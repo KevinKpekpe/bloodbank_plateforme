@@ -13,6 +13,7 @@ use App\Http\Controllers\Donor\DonationController;
 use App\Http\Controllers\Admin\AppointmentController as AdminAppointmentController;
 use App\Http\Controllers\Admin\DonationController as AdminDonationController;
 use App\Http\Controllers\Admin\BankAdminController;
+use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\SuperAdmin\BankController;
 use App\Http\Controllers\SuperAdmin\UserController;
 use App\Http\Controllers\NotificationController;
@@ -144,6 +145,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/donations/{donation}/available', [AdminDonationController::class, 'makeAvailable'])->name('donations.available');
     Route::post('/donations/{donation}/expire', [AdminDonationController::class, 'expire'])->name('donations.expire');
     Route::post('/donations/{donation}/use', [AdminDonationController::class, 'use'])->name('donations.use');
+
+    // Gestion des stocks de sang
+    Route::resource('stocks', StockController::class);
+    Route::get('/stocks/create/multiple', [StockController::class, 'createMultiple'])->name('stocks.create-multiple');
+    Route::post('/stocks/store/multiple', [StockController::class, 'storeMultiple'])->name('stocks.store-multiple');
 
     // Gestion des utilisateurs (donneurs de la banque)
     Route::get('/users', function () {
