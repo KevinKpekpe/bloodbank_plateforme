@@ -63,7 +63,7 @@
                 <div class="mt-8 pt-6 border-t border-gray-200">
                     <p class="text-sm text-gray-500 mb-4">Vous cherchez quelque chose de spécifique ?</p>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                        <a href="{{ route('geolocation.index') }}" class="text-red-600 hover:text-red-500 flex items-center">
+                        <a href="{{ route('blood-bank-map.index') }}" class="text-red-600 hover:text-red-500 flex items-center">
                             <i class="fas fa-map-marker-alt mr-2"></i>
                             Carte interactive
                         </a>

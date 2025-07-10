@@ -18,7 +18,6 @@ use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\SuperAdmin\BankController;
 use App\Http\Controllers\SuperAdmin\UserController;
 use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\GeolocationController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
@@ -36,13 +35,12 @@ Route::get('/partnership', [PartnershipController::class, 'index'])->name('partn
 Route::post('/partnership', [PartnershipController::class, 'store'])->name('partnership.store');
 Route::get('/blood-banks', [BloodBankController::class, 'index'])->name('blood-banks');
 
-// Routes de géolocalisation (publiques)
-Route::get('/map', [GeolocationController::class, 'index'])->name('geolocation.index');
-Route::get('/geolocation/nearby', [GeolocationController::class, 'nearby'])->name('geolocation.nearby');
-Route::get('/geolocation/all-banks', [GeolocationController::class, 'allBanks'])->name('geolocation.all-banks');
-Route::get('/geolocation/bank/{bank}', [GeolocationController::class, 'bankDetails'])->name('geolocation.bank-details');
-Route::get('/geolocation/search', [GeolocationController::class, 'search'])->name('geolocation.search');
-Route::get('/geolocation/statistics', [GeolocationController::class, 'statistics'])->name('geolocation.statistics');
+// Routes pour la page unifiée des banques de sang
+Route::get('/blood-bank-map', [App\Http\Controllers\BloodBankMapController::class, 'index'])->name('blood-bank-map.index');
+Route::get('/blood-bank-map/{bank}/details', [App\Http\Controllers\BloodBankMapController::class, 'bankDetails'])->name('blood-bank-map.details');
+Route::get('/blood-bank-map/search', [App\Http\Controllers\BloodBankMapController::class, 'search'])->name('blood-bank-map.search');
+Route::get('/blood-bank-map/nearby', [App\Http\Controllers\BloodBankMapController::class, 'nearby'])->name('blood-bank-map.nearby');
+Route::get('/blood-bank-map/filter-by-blood-type', [App\Http\Controllers\BloodBankMapController::class, 'filterByBloodType'])->name('blood-bank-map.filter-by-blood-type');
 
 /*
 |--------------------------------------------------------------------------

@@ -47,7 +47,7 @@
                         <a href="{{ route('blood-banks') }}" class="text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium hover:border-red-500 hover:text-red-600">
                             Banques de Sang
                         </a>
-                        <a href="{{ route('geolocation.index') }}" class="text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium hover:border-red-500 hover:text-red-600">
+                        <a href="{{ route('blood-bank-map.index') }}" class="text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium hover:border-red-500 hover:text-red-600">
                             <i class="fas fa-map-marker-alt mr-1"></i>Carte
                         </a>
                         <a href="{{ route('about') }}" class="text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium hover:border-red-500 hover:text-red-600">
@@ -155,7 +155,7 @@
                     <ul class="space-y-2 text-sm text-gray-300">
                         <li><a href="{{ route('home') }}" class="hover:text-white">Accueil</a></li>
                         <li><a href="{{ route('blood-banks') }}" class="hover:text-white">Banques de Sang</a></li>
-                        <li><a href="{{ route('geolocation.index') }}" class="hover:text-white">Carte Interactive</a></li>
+                        <li><a href="{{ route('blood-bank-map.index') }}" class="hover:text-white">Carte Interactive</a></li>
                         <li><a href="{{ route('about') }}" class="hover:text-white">À Propos</a></li>
                         <li><a href="{{ route('contact') }}" class="hover:text-white">Contact</a></li>
                     </ul>

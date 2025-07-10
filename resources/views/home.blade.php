@@ -34,7 +34,7 @@
                         </svg>
                         Trouver une banque
                     </a>
-                    <a href="{{ route('geolocation.index') }}" class="bg-white/20 backdrop-blur-sm text-white hover:bg-white hover:text-red-600 font-semibold rounded-lg transition-colors inline-flex items-center text-lg px-8 py-4">
+                    <a href="{{ route('blood-bank-map.index') }}" class="bg-white/20 backdrop-blur-sm text-white hover:bg-white hover:text-red-600 font-semibold rounded-lg transition-colors inline-flex items-center text-lg px-8 py-4">
                         <i class="fas fa-map-marker-alt mr-2"></i>
                         Carte Interactive
                     </a>
@@ -179,7 +179,7 @@
                     </div>
                 </div>
 
-                <a href="{{ route('geolocation.index') }}"
+                <a href="{{ route('blood-bank-map.index') }}"
                    class="inline-flex items-center bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors">
                     <i class="fas fa-map-marker-alt mr-3"></i>
                     Voir la Carte Interactive

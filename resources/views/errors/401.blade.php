@@ -89,7 +89,7 @@
                             <i class="fas fa-hospital mr-2"></i>
                             Voir les banques
                         </a>
-                        <a href="{{ route('geolocation.index') }}" class="text-red-600 hover:text-red-500 flex items-center">
+                        <a href="{{ route('blood-bank-map.index') }}" class="text-red-600 hover:text-red-500 flex items-center">
                             <i class="fas fa-map-marker-alt mr-2"></i>
                             Carte interactive
                         </a>
