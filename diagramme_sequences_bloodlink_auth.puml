@@ -1,0 +1,41 @@
+@startuml Diagramme de Séquences - BloodLink - Authentification
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 60
+
+title **Processus d'Authentification - BloodLink**
+
+actor "Donneur" as Donor
+actor "Admin Banque" as BankAdmin
+actor "Super Admin" as SuperAdmin
+
+participant "Interface Web" as UI
+participant "AuthController" as Auth
+participant "User Model" as UserModel
+
+database "Base de Données" as DB
+
+== **Processus d'Authentification** ==
+
+note over Donor, Auth : **Étape 1: Connexion utilisateur**
+Donor -> UI: Accès à la page de connexion
+UI -> Auth: showLoginForm()
+Auth -> UI: Afficher formulaire de connexion
+UI -> Donor: Formulaire de connexion
+
+note over Donor, Auth : **Étape 2: Validation des identifiants**
+Donor -> UI: Saisir identifiants (email/password)
+UI -> Auth: login(credentials)
+Auth -> UserModel: Vérifier identifiants
+UserModel -> DB: SELECT * FROM users WHERE email = ? AND status = 'active'
+DB -> UserModel: Données utilisateur
+UserModel -> Auth: Utilisateur authentifié
+
+note over Auth, UI : **Étape 3: Redirection selon le rôle**
+Auth -> UI: Redirection vers dashboard
+UI -> Donor: Dashboard donneur
+
+@enduml

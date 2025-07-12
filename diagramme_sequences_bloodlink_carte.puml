@@ -1,0 +1,56 @@
+@startuml Diagramme de Séquences - BloodLink - Consultation de la Carte
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 60
+
+title **Processus de Consultation de la Carte - BloodLink**
+
+actor "Donneur" as Donor
+
+participant "Interface Web" as UI
+participant "BloodBankMapController" as MapCtrl
+participant "Bank Model" as BankModel
+participant "BloodStock Model" as StockModel
+
+database "Base de Données" as DB
+
+== **Processus de Consultation de la Carte** ==
+
+note over Donor, MapCtrl : **Étape 1: Affichage de la carte**
+Donor -> UI: Accès à la carte des banques
+UI -> MapCtrl: index()
+MapCtrl -> BankModel: Récupérer toutes les banques
+BankModel -> DB: SELECT * FROM banks WHERE status = 'active'
+DB -> BankModel: Liste des banques
+BankModel -> MapCtrl: Banques récupérées
+MapCtrl -> UI: Données pour la carte
+UI -> Donor: Carte interactive
+
+note over Donor, MapCtrl : **Étape 2: Recherche par proximité**
+Donor -> UI: Rechercher banques à proximité
+UI -> MapCtrl: nearby(latitude, longitude)
+MapCtrl -> BankModel: Calculer distances
+BankModel -> DB: SELECT *, ST_Distance_Sphere(point(longitude, latitude), point(?, ?)) as distance FROM banks WHERE status = 'active'
+DB -> BankModel: Toutes les banques avec distances
+BankModel -> MapCtrl: Banques avec distances
+MapCtrl -> UI: Banques triées par proximité
+UI -> Donor: Résultats de recherche
+
+note over Donor, MapCtrl : **Étape 3: Filtrage par groupe sanguin**
+Donor -> UI: Filtrer par groupe sanguin
+UI -> MapCtrl: filterByBloodType(bloodTypeId)
+MapCtrl -> StockModel: Récupérer stocks par groupe sanguin
+StockModel -> DB: SELECT * FROM blood_stocks WHERE blood_type_id = ? AND quantity > 0
+DB -> StockModel: Stocks du groupe sanguin
+StockModel -> MapCtrl: Stocks récupérés
+MapCtrl -> BankModel: Récupérer banques avec stock
+BankModel -> DB: SELECT * FROM banks WHERE id IN (SELECT bank_id FROM blood_stocks WHERE blood_type_id = ? AND quantity > 0)
+DB -> BankModel: Banques avec stock
+BankModel -> MapCtrl: Banques filtrées
+MapCtrl -> UI: Banques avec disponibilité
+UI -> Donor: Résultats filtrés
+
+@enduml

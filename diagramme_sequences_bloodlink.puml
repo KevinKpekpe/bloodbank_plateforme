@@ -1,0 +1,323 @@
+@startuml Diagramme de Séquences - BloodLink
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 60
+skinparam participant {
+    BackgroundColor #E3F2FD
+    BorderColor #1976D2
+}
+skinparam actor {
+    BackgroundColor #FFF3E0
+    BorderColor #F57C00
+}
+skinparam database {
+    BackgroundColor #E8F5E8
+    BorderColor #388E3C
+}
+
+title **Diagramme de Séquences - Application BloodLink**\n*Plateforme de Gestion de Banques de Sang*
+
+actor "👤 Donneur" as Donor #FF9800
+actor "🏥 Admin Banque" as BankAdmin #2196F3
+actor "⚡ Super Admin" as SuperAdmin #9C27B0
+
+participant "🌐 Interface Web\n(Laravel Blade)" as UI #4CAF50
+participant "🔐 AuthController" as Auth #FF5722
+participant "📅 AppointmentController" as AppointmentCtrl #3F51B5
+participant "🩸 DonationController" as DonationCtrl #E91E63
+participant "🗺️ BloodBankMapController" as MapCtrl #00BCD4
+participant "🔔 NotificationService" as NotifService #FFC107
+participant "📧 EmailService" as EmailService #795548
+
+participant "👤 User Model" as UserModel #607D8B
+participant "🩺 Donor Model" as DonorModel #8BC34A
+participant "📋 Appointment Model" as AppointmentModel #FF9800
+participant "🩸 Donation Model" as DonationModel #F44336
+participant "🏥 Bank Model" as BankModel #2196F3
+participant "📦 BloodStock Model" as StockModel #9C27B0
+participant "🩸 BloodType Model" as BloodTypeModel #E91E63
+
+database "🗄️ Base de Données\n(MySQL)" as DB #4CAF50
+
+== 🔐 **Processus d'Authentification** ==
+
+note over Donor, Auth : **Étape 1: Connexion utilisateur**
+Donor -> UI: Accès à la page de connexion
+UI -> Auth: showLoginForm()
+Auth -> UI: Afficher formulaire de connexion
+UI -> Donor: Formulaire de connexion
+
+note over Donor, Auth : **Étape 2: Validation des identifiants**
+Donor -> UI: Saisir identifiants (email/password)
+UI -> Auth: login(credentials)
+Auth -> UserModel: Vérifier identifiants
+UserModel -> DB: SELECT * FROM users WHERE email = ? AND status = 'active'
+DB -> UserModel: Données utilisateur
+UserModel -> Auth: Utilisateur authentifié
+
+note over Auth, UI : **Étape 3: Redirection selon le rôle**
+Auth -> UI: Redirection vers dashboard
+UI -> Donor: Dashboard donneur
+
+== 📅 **Processus de Prise de Rendez-vous** ==
+
+note over Donor, AppointmentCtrl : **Étape 1: Accès au formulaire**
+Donor -> UI: Accès à "Prendre Rendez-vous"
+UI -> AppointmentCtrl: create()
+AppointmentCtrl -> BankModel: Récupérer banques actives
+BankModel -> DB: SELECT * FROM banks WHERE status = 'active'
+DB -> BankModel: Liste des banques
+BankModel -> AppointmentCtrl: Banques disponibles
+AppointmentCtrl -> UI: Formulaire de rendez-vous
+UI -> Donor: Formulaire avec banques
+
+note over Donor, AppointmentCtrl : **Étape 2: Validation et création**
+Donor -> UI: Remplir formulaire (banque, date, heure)
+UI -> AppointmentCtrl: store(appointmentData)
+
+note over AppointmentCtrl, DonorModel : **Validation du profil donneur**
+AppointmentCtrl -> DonorModel: Vérifier profil donneur
+DonorModel -> DB: SELECT * FROM donors WHERE user_id = ?
+DB -> DonorModel: Profil donneur
+DonorModel -> AppointmentCtrl: Profil trouvé
+
+note over AppointmentCtrl, BankModel : **Validation de la banque**
+AppointmentCtrl -> BankModel: Vérifier disponibilité banque
+BankModel -> DB: SELECT * FROM banks WHERE id = ? AND status = 'active'
+DB -> BankModel: Détails banque
+BankModel -> AppointmentCtrl: Banque disponible
+
+note over AppointmentCtrl, AppointmentModel : **Vérification des conflits**
+AppointmentCtrl -> AppointmentModel: Vérifier conflit de rendez-vous
+AppointmentModel -> DB: SELECT * FROM appointments WHERE donor_id = ? AND appointment_date = ?
+DB -> AppointmentModel: Rendez-vous existants
+AppointmentModel -> AppointmentCtrl: Aucun conflit
+
+note over AppointmentCtrl, AppointmentModel : **Création du rendez-vous**
+AppointmentCtrl -> AppointmentModel: create(appointmentData)
+AppointmentModel -> DB: INSERT INTO appointments (donor_id, bank_id, appointment_date, status)
+DB -> AppointmentModel: Rendez-vous créé
+AppointmentModel -> AppointmentCtrl: Rendez-vous enregistré
+
+note over AppointmentCtrl, UI : **Confirmation**
+AppointmentCtrl -> UI: Redirection avec succès
+UI -> Donor: Confirmation de création
+
+== 🏥 **Processus de Gestion des Rendez-vous (Admin)** ==
+
+note over BankAdmin, AppointmentCtrl : **Étape 1: Consultation des rendez-vous**
+BankAdmin -> UI: Accès à la liste des rendez-vous
+UI -> AppointmentCtrl: index()
+AppointmentCtrl -> BankModel: Récupérer banque de l'admin
+BankModel -> DB: SELECT * FROM banks WHERE admin_id = ?
+DB -> BankModel: Banque de l'admin
+BankModel -> AppointmentCtrl: Banque identifiée
+
+AppointmentCtrl -> AppointmentModel: Récupérer rendez-vous de la banque
+AppointmentModel -> DB: SELECT * FROM appointments WHERE bank_id = ? ORDER BY appointment_date
+DB -> AppointmentModel: Liste des rendez-vous
+AppointmentModel -> AppointmentCtrl: Rendez-vous récupérés
+AppointmentCtrl -> UI: Liste des rendez-vous
+UI -> BankAdmin: Interface de gestion
+
+note over BankAdmin, AppointmentCtrl : **Étape 2: Confirmation d'un rendez-vous**
+BankAdmin -> UI: Confirmer un rendez-vous
+UI -> AppointmentCtrl: confirm(appointmentId)
+AppointmentCtrl -> AppointmentModel: update(status = 'confirmed')
+AppointmentModel -> DB: UPDATE appointments SET status = 'confirmed', confirmed_at = NOW()
+DB -> AppointmentModel: Rendez-vous confirmé
+AppointmentModel -> AppointmentCtrl: Confirmation effectuée
+
+note over AppointmentCtrl, NotifService : **Envoi de notification**
+AppointmentCtrl -> NotifService: appointmentConfirmed(appointment)
+NotifService -> DB: INSERT INTO notifications (user_id, title, message, type)
+DB -> NotifService: Notification créée
+NotifService -> AppointmentCtrl: Notification envoyée
+AppointmentCtrl -> UI: Redirection avec succès
+UI -> BankAdmin: Confirmation de l'action
+
+== 🩸 **Processus de Don de Sang** ==
+
+note over BankAdmin, AppointmentCtrl : **Étape 1: Enregistrement du don**
+BankAdmin -> UI: Marquer rendez-vous comme terminé
+UI -> AppointmentCtrl: complete(appointmentId, volume)
+
+note over AppointmentCtrl, DonorModel : **Récupération des données donneur**
+AppointmentCtrl -> DonorModel: Récupérer groupe sanguin
+DonorModel -> DB: SELECT blood_type_id FROM donors WHERE id = ?
+DB -> DonorModel: Groupe sanguin
+DonorModel -> AppointmentCtrl: Groupe sanguin récupéré
+
+note over AppointmentCtrl, DonationModel : **Création du don**
+AppointmentCtrl -> DonationModel: create(donationData)
+DonationModel -> DB: INSERT INTO donations (appointment_id, donor_id, bank_id, blood_type_id, volume, quantity, status)
+DB -> DonationModel: Don créé
+DonationModel -> AppointmentCtrl: Don enregistré
+
+note over AppointmentCtrl, StockModel : **Mise à jour du stock**
+AppointmentCtrl -> StockModel: Mettre à jour stock
+StockModel -> DB: SELECT * FROM blood_stocks WHERE bank_id = ? AND blood_type_id = ?
+DB -> StockModel: Stock existant
+StockModel -> DB: UPDATE blood_stocks SET quantity = quantity + ?
+DB -> StockModel: Stock mis à jour
+StockModel -> AppointmentCtrl: Stock actualisé
+
+note over AppointmentCtrl, AppointmentModel : **Finalisation du rendez-vous**
+AppointmentCtrl -> AppointmentModel: update(status = 'completed')
+AppointmentModel -> DB: UPDATE appointments SET status = 'completed', completed_at = NOW()
+DB -> AppointmentModel: Rendez-vous terminé
+AppointmentModel -> AppointmentCtrl: Rendez-vous marqué comme terminé
+AppointmentCtrl -> UI: Redirection avec succès
+UI -> BankAdmin: Confirmation de don enregistré
+
+== 🩸 **Processus de Gestion des Dons** ==
+
+note over BankAdmin, DonationCtrl : **Étape 1: Consultation des dons**
+BankAdmin -> UI: Accès à la gestion des dons
+UI -> DonationCtrl: index()
+DonationCtrl -> BankModel: Récupérer banque de l'admin
+BankModel -> DonationCtrl: Banque identifiée
+DonationCtrl -> DonationModel: Récupérer dons de la banque
+DonationModel -> DB: SELECT * FROM donations WHERE bank_id = ? ORDER BY donation_date DESC
+DB -> DonationModel: Liste des dons
+DonationModel -> DonationCtrl: Dons récupérés
+DonationCtrl -> UI: Liste des dons
+UI -> BankAdmin: Interface de gestion des dons
+
+note over BankAdmin, DonationCtrl : **Étape 2: Traitement d'un don**
+BankAdmin -> UI: Marquer don comme traité
+UI -> DonationCtrl: process(donationId)
+DonationCtrl -> DonationModel: update(status = 'processed')
+DonationModel -> DB: UPDATE donations SET status = 'processed', processed_at = NOW()
+DB -> DonationModel: Don traité
+DonationModel -> DonationCtrl: Traitement effectué
+
+note over DonationCtrl, NotifService : **Notification de traitement**
+DonationCtrl -> NotifService: donationProcessed(donation)
+NotifService -> DB: INSERT INTO notifications (user_id, title, message, type)
+DB -> NotifService: Notification créée
+NotifService -> DonationCtrl: Notification envoyée
+DonationCtrl -> UI: Redirection avec succès
+UI -> BankAdmin: Confirmation de traitement
+
+note over BankAdmin, DonationCtrl : **Étape 3: Mise à disposition**
+BankAdmin -> UI: Rendre don disponible
+UI -> DonationCtrl: makeAvailable(donationId)
+DonationCtrl -> DonationModel: update(status = 'available')
+DonationModel -> DB: UPDATE donations SET status = 'available', available_at = NOW()
+DB -> DonationModel: Don disponible
+DonationModel -> DonationCtrl: Disponibilité effectuée
+
+note over DonationCtrl, NotifService : **Notification de disponibilité**
+DonationCtrl -> NotifService: donationAvailable(donation)
+NotifService -> DB: INSERT INTO notifications (user_id, title, message, type)
+DB -> NotifService: Notification créée
+NotifService -> DonationCtrl: Notification envoyée
+DonationCtrl -> UI: Redirection avec succès
+UI -> BankAdmin: Confirmation de disponibilité
+
+== 🗺️ **Processus de Consultation de la Carte** ==
+
+note over Donor, MapCtrl : **Étape 1: Affichage de la carte**
+Donor -> UI: Accès à la carte des banques
+UI -> MapCtrl: index()
+MapCtrl -> BankModel: Récupérer toutes les banques
+BankModel -> DB: SELECT * FROM banks WHERE status = 'active'
+DB -> BankModel: Liste des banques
+BankModel -> MapCtrl: Banques récupérées
+MapCtrl -> UI: Données pour la carte
+UI -> Donor: Carte interactive
+
+note over Donor, MapCtrl : **Étape 2: Recherche par proximité**
+Donor -> UI: Rechercher banques à proximité
+UI -> MapCtrl: nearby(latitude, longitude)
+MapCtrl -> BankModel: Calculer distances
+BankModel -> DB: SELECT *, ST_Distance_Sphere(point(longitude, latitude), point(?, ?)) as distance FROM banks WHERE status = 'active'
+DB -> BankModel: Toutes les banques avec distances
+BankModel -> MapCtrl: Banques avec distances
+MapCtrl -> UI: Banques triées par proximité
+UI -> Donor: Résultats de recherche
+
+note over Donor, MapCtrl : **Étape 3: Filtrage par groupe sanguin**
+Donor -> UI: Filtrer par groupe sanguin
+UI -> MapCtrl: filterByBloodType(bloodTypeId)
+MapCtrl -> StockModel: Récupérer stocks par groupe sanguin
+StockModel -> DB: SELECT * FROM blood_stocks WHERE blood_type_id = ? AND quantity > 0
+DB -> StockModel: Stocks du groupe sanguin
+StockModel -> MapCtrl: Stocks récupérés
+MapCtrl -> BankModel: Récupérer banques avec stock
+BankModel -> DB: SELECT * FROM banks WHERE id IN (SELECT bank_id FROM blood_stocks WHERE blood_type_id = ? AND quantity > 0)
+DB -> BankModel: Banques avec stock
+BankModel -> MapCtrl: Banques filtrées
+MapCtrl -> UI: Banques avec disponibilité
+UI -> Donor: Résultats filtrés
+
+== 👤 **Processus de Consultation du Profil Donneur** ==
+
+note over Donor, DonorModel : **Étape 1: Accès au profil**
+Donor -> UI: Accès au profil
+UI -> DonorCtrl: profile()
+DonorCtrl -> DonorModel: Récupérer profil complet
+DonorModel -> DB: SELECT * FROM donors WHERE user_id = ?
+DB -> DonorModel: Profil donneur
+DonorModel -> DonorCtrl: Profil récupéré
+DonorCtrl -> UI: Données du profil
+UI -> Donor: Page de profil
+
+note over Donor, DonationCtrl : **Étape 2: Historique des dons**
+Donor -> UI: Consulter historique des dons
+UI -> DonationCtrl: index()
+DonationCtrl -> DonorModel: Récupérer dons du donneur
+DonorModel -> DB: SELECT * FROM donations WHERE donor_id = ? ORDER BY donation_date DESC
+DB -> DonorModel: Historique des dons
+DonorModel -> DonationCtrl: Dons récupérés
+DonationCtrl -> UI: Liste des dons
+UI -> Donor: Historique des dons
+
+== 🔔 **Processus de Gestion des Notifications** ==
+
+note over Donor, NotifService : **Étape 1: Consultation des notifications**
+Donor -> UI: Consulter notifications
+UI -> NotificationCtrl: index()
+NotificationCtrl -> UserModel: Récupérer notifications utilisateur
+UserModel -> DB: SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC
+DB -> UserModel: Notifications
+UserModel -> NotificationCtrl: Notifications récupérées
+NotificationCtrl -> UI: Liste des notifications
+UI -> Donor: Interface des notifications
+
+note over Donor, NotificationCtrl : **Étape 2: Marquage comme lue**
+Donor -> UI: Marquer notification comme lue
+UI -> NotificationCtrl: markAsRead(notificationId)
+NotificationCtrl -> DB: UPDATE notifications SET read_at = NOW() WHERE id = ?
+DB -> NotificationCtrl: Notification marquée comme lue
+NotificationCtrl -> UI: Confirmation
+UI -> Donor: Notification mise à jour
+
+== 📊 **Processus de Rapports (Super Admin)** ==
+
+note over SuperAdmin, ReportCtrl : **Étape 1: Génération de rapports**
+SuperAdmin -> UI: Accès aux rapports
+UI -> ReportCtrl: index()
+ReportCtrl -> DonationModel: Statistiques globales
+DonationModel -> DB: SELECT COUNT(*), SUM(volume) FROM donations
+DB -> DonationModel: Statistiques dons
+ReportCtrl -> BankModel: Statistiques banques
+BankModel -> DB: SELECT COUNT(*) FROM banks WHERE status = 'active'
+DB -> BankModel: Statistiques banques
+ReportCtrl -> UI: Données des rapports
+UI -> SuperAdmin: Interface des rapports
+
+note over SuperAdmin, ReportCtrl : **Étape 2: Export des données**
+SuperAdmin -> UI: Exporter rapport
+UI -> ReportCtrl: export(format)
+ReportCtrl -> DonationModel: Récupérer données
+DonationModel -> DB: SELECT * FROM donations WHERE created_at >= ?
+DB -> DonationModel: Données pour export
+ReportCtrl -> UI: Fichier d'export
+UI -> SuperAdmin: Téléchargement du rapport
+
+@enduml

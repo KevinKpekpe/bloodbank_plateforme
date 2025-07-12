@@ -1,0 +1,66 @@
+@startuml Diagramme de Séquences - BloodLink - Prise de Rendez-vous
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 60
+
+title **Processus de Prise de Rendez-vous - BloodLink**
+
+actor "Donneur" as Donor
+actor "Admin Banque" as BankAdmin
+
+participant "Interface Web" as UI
+participant "AppointmentController" as AppointmentCtrl
+participant "Donor Model" as DonorModel
+participant "Appointment Model" as AppointmentModel
+participant "Bank Model" as BankModel
+
+database "Base de Données" as DB
+
+== **Processus de Prise de Rendez-vous** ==
+
+note over Donor, AppointmentCtrl : **Étape 1: Accès au formulaire**
+Donor -> UI: Accès à "Prendre Rendez-vous"
+UI -> AppointmentCtrl: create()
+AppointmentCtrl -> BankModel: Récupérer banques actives
+BankModel -> DB: SELECT * FROM banks WHERE status = 'active'
+DB -> BankModel: Liste des banques
+BankModel -> AppointmentCtrl: Banques disponibles
+AppointmentCtrl -> UI: Formulaire de rendez-vous
+UI -> Donor: Formulaire avec banques
+
+note over Donor, AppointmentCtrl : **Étape 2: Validation et création**
+Donor -> UI: Remplir formulaire (banque, date, heure)
+UI -> AppointmentCtrl: store(appointmentData)
+
+note over AppointmentCtrl, DonorModel : **Validation du profil donneur**
+AppointmentCtrl -> DonorModel: Vérifier profil donneur
+DonorModel -> DB: SELECT * FROM donors WHERE user_id = ?
+DB -> DonorModel: Profil donneur
+DonorModel -> AppointmentCtrl: Profil trouvé
+
+note over AppointmentCtrl, BankModel : **Validation de la banque**
+AppointmentCtrl -> BankModel: Vérifier disponibilité banque
+BankModel -> DB: SELECT * FROM banks WHERE id = ? AND status = 'active'
+DB -> BankModel: Détails banque
+BankModel -> AppointmentCtrl: Banque disponible
+
+note over AppointmentCtrl, AppointmentModel : **Vérification des conflits**
+AppointmentCtrl -> AppointmentModel: Vérifier conflit de rendez-vous
+AppointmentModel -> DB: SELECT * FROM appointments WHERE donor_id = ? AND appointment_date = ?
+DB -> AppointmentModel: Rendez-vous existants
+AppointmentModel -> AppointmentCtrl: Aucun conflit
+
+note over AppointmentCtrl, AppointmentModel : **Création du rendez-vous**
+AppointmentCtrl -> AppointmentModel: create(appointmentData)
+AppointmentModel -> DB: INSERT INTO appointments (donor_id, bank_id, appointment_date, status)
+DB -> AppointmentModel: Rendez-vous créé
+AppointmentModel -> AppointmentCtrl: Rendez-vous enregistré
+
+note over AppointmentCtrl, UI : **Confirmation**
+AppointmentCtrl -> UI: Redirection avec succès
+UI -> Donor: Confirmation de création
+
+@enduml

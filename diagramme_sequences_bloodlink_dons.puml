@@ -1,0 +1,102 @@
+@startuml Diagramme de Séquences - BloodLink - Gestion des Dons
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 60
+
+title **Processus de Gestion des Dons - BloodLink**
+
+actor "Admin Banque" as BankAdmin
+
+participant "Interface Web" as UI
+participant "AppointmentController" as AppointmentCtrl
+participant "DonationController" as DonationCtrl
+participant "NotificationService" as NotifService
+participant "Donor Model" as DonorModel
+participant "Appointment Model" as AppointmentModel
+participant "Donation Model" as DonationModel
+participant "BloodStock Model" as StockModel
+
+database "Base de Données" as DB
+
+== **Processus de Don de Sang** ==
+
+note over BankAdmin, AppointmentCtrl : **Étape 1: Enregistrement du don**
+BankAdmin -> UI: Marquer rendez-vous comme terminé
+UI -> AppointmentCtrl: complete(appointmentId, volume)
+
+note over AppointmentCtrl, DonorModel : **Récupération des données donneur**
+AppointmentCtrl -> DonorModel: Récupérer groupe sanguin
+DonorModel -> DB: SELECT blood_type_id FROM donors WHERE id = ?
+DB -> DonorModel: Groupe sanguin
+DonorModel -> AppointmentCtrl: Groupe sanguin récupéré
+
+note over AppointmentCtrl, DonationModel : **Création du don**
+AppointmentCtrl -> DonationModel: create(donationData)
+DonationModel -> DB: INSERT INTO donations (appointment_id, donor_id, bank_id, blood_type_id, volume, quantity, status)
+DB -> DonationModel: Don créé
+DonationModel -> AppointmentCtrl: Don enregistré
+
+note over AppointmentCtrl, StockModel : **Mise à jour du stock**
+AppointmentCtrl -> StockModel: Mettre à jour stock
+StockModel -> DB: SELECT * FROM blood_stocks WHERE bank_id = ? AND blood_type_id = ?
+DB -> StockModel: Stock existant
+StockModel -> DB: UPDATE blood_stocks SET quantity = quantity + ?
+DB -> StockModel: Stock mis à jour
+StockModel -> AppointmentCtrl: Stock actualisé
+
+note over AppointmentCtrl, AppointmentModel : **Finalisation du rendez-vous**
+AppointmentCtrl -> AppointmentModel: update(status = 'completed')
+AppointmentModel -> DB: UPDATE appointments SET status = 'completed', completed_at = NOW()
+DB -> AppointmentModel: Rendez-vous terminé
+AppointmentModel -> AppointmentCtrl: Rendez-vous marqué comme terminé
+AppointmentCtrl -> UI: Redirection avec succès
+UI -> BankAdmin: Confirmation de don enregistré
+
+== **Processus de Gestion des Dons** ==
+
+note over BankAdmin, DonationCtrl : **Étape 1: Consultation des dons**
+BankAdmin -> UI: Accès à la gestion des dons
+UI -> DonationCtrl: index()
+DonationCtrl -> DonationModel: Récupérer dons de la banque
+DonationModel -> DB: SELECT * FROM donations WHERE bank_id = ? ORDER BY donation_date DESC
+DB -> DonationModel: Liste des dons
+DonationModel -> DonationCtrl: Dons récupérés
+DonationCtrl -> UI: Liste des dons
+UI -> BankAdmin: Interface de gestion des dons
+
+note over BankAdmin, DonationCtrl : **Étape 2: Traitement d'un don**
+BankAdmin -> UI: Marquer don comme traité
+UI -> DonationCtrl: process(donationId)
+DonationCtrl -> DonationModel: update(status = 'processed')
+DonationModel -> DB: UPDATE donations SET status = 'processed', processed_at = NOW()
+DB -> DonationModel: Don traité
+DonationModel -> DonationCtrl: Traitement effectué
+
+note over DonationCtrl, NotifService : **Notification de traitement**
+DonationCtrl -> NotifService: donationProcessed(donation)
+NotifService -> DB: INSERT INTO notifications (user_id, title, message, type)
+DB -> NotifService: Notification créée
+NotifService -> DonationCtrl: Notification envoyée
+DonationCtrl -> UI: Redirection avec succès
+UI -> BankAdmin: Confirmation de traitement
+
+note over BankAdmin, DonationCtrl : **Étape 3: Mise à disposition**
+BankAdmin -> UI: Rendre don disponible
+UI -> DonationCtrl: makeAvailable(donationId)
+DonationCtrl -> DonationModel: update(status = 'available')
+DonationModel -> DB: UPDATE donations SET status = 'available', available_at = NOW()
+DB -> DonationModel: Don disponible
+DonationModel -> DonationCtrl: Disponibilité effectuée
+
+note over DonationCtrl, NotifService : **Notification de disponibilité**
+DonationCtrl -> NotifService: donationAvailable(donation)
+NotifService -> DB: INSERT INTO notifications (user_id, title, message, type)
+DB -> NotifService: Notification créée
+NotifService -> DonationCtrl: Notification envoyée
+DonationCtrl -> UI: Redirection avec succès
+UI -> BankAdmin: Confirmation de disponibilité
+
+@enduml
