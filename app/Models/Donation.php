@@ -59,6 +59,30 @@ class Donation extends Model
     }
 
     /**
+     * Get the blood bags created from this donation.
+     */
+    public function bloodBags()
+    {
+        return $this->hasMany(BloodBag::class);
+    }
+
+    /**
+     * Get the number of blood bags created from this donation.
+     */
+    public function getBloodBagsCount(): int
+    {
+        return $this->bloodBags()->count();
+    }
+
+    /**
+     * Get available blood bags from this donation.
+     */
+    public function getAvailableBloodBags()
+    {
+        return $this->bloodBags()->where('status', 'available');
+    }
+
+    /**
      * Check if donation is collected.
      */
     public function isCollected(): bool
