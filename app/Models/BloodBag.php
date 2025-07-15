@@ -281,6 +281,38 @@ class BloodBag extends Model
     }
 
     /**
+     * Marquer une poche comme expirée
+     */
+    public function expire(string $reason = 'Expiration automatique')
+    {
+        return DB::transaction(function () use ($reason) {
+            // Annuler toute réservation active
+            $reservation = $this->activeReservation()->first();
+            if ($reservation) {
+                $reservation->update(['status' => 'cancelled']);
+            }
+
+            // Changer le statut de la poche
+            $this->update([
+                'status' => 'expired',
+                'reserved_for_patient' => null,
+                'reserved_for_hospital' => null,
+                'reserved_until' => null,
+            ]);
+
+            // Enregistrer le mouvement
+            BloodBagMovement::create([
+                'blood_bag_id' => $this->id,
+                'bank_id' => $this->bank_id,
+                'movement_type' => 'expiration',
+                'recipient_type' => 'expired',
+                'reason' => $reason,
+                'movement_date' => now(),
+            ]);
+        });
+    }
+
+    /**
      * Méthodes utilitaires
      */
     public function getVolumeInLiters(): float

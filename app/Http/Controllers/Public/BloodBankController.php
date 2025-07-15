@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Models\Bank;
 use App\Models\BloodStock;
+use App\Models\BloodBag;
+use App\Helpers\StockHelper;
 use Illuminate\Http\Request;
 
 class BloodBankController extends Controller
@@ -18,7 +20,7 @@ class BloodBankController extends Controller
         if ($request->filled('blood_type')) {
             $query->whereHas('bloodStocks', function ($q) use ($request) {
                 $q->where('blood_type_id', $request->blood_type)
-                  ->where('quantity', '>', 0);
+                  ->where('available_bags', '>', 0); // Utiliser les poches disponibles
             });
         }
 
@@ -29,13 +31,12 @@ class BloodBankController extends Controller
 
         $banks = $query->get();
 
-        // Formater les données pour l'affichage
+        // Formater les données pour l'affichage en utilisant les statistiques des poches
         $banks->each(function ($bank) {
-            $totalQuantity = $bank->bloodStocks->sum('quantity');
-            $bank->total_stocks = number_format($totalQuantity / 1000, 1) . 'L'; // Convertir en litres
-            $bank->critical_stocks = $bank->bloodStocks->filter(function ($stock) {
-                return $stock->quantity <= $stock->critical_level;
-            })->count();
+            $statistics = StockHelper::getDashboardStatistics($bank);
+            $bank->total_stocks = number_format($statistics['total_volume_l'], 1) . 'L'; // Volume total en litres
+            $bank->available_stocks = $statistics['available_bags'] . ' poches'; // Nombre de poches disponibles
+            $bank->critical_stocks = $statistics['critical_bags'] ?? 0; // Poches en niveau critique
         });
 
         return view('public.blood-banks', compact('banks'));

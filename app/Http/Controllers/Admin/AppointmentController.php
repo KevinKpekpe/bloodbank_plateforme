@@ -5,8 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Donation;
-use App\Models\BloodType;
 use App\Models\BloodStock;
+use App\Models\BloodBag;
+use App\Helpers\StockHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -35,7 +36,7 @@ class AppointmentController extends Controller
     {
         $bank = $this->getAdminBank();
 
-        $query = Appointment::with(['donor', 'donation'])
+        $query = Appointment::with(['donor.user', 'donation'])
             ->where('bank_id', $bank->id);
 
         // Filtres
@@ -71,7 +72,7 @@ class AppointmentController extends Controller
             abort(403);
         }
 
-        $appointment->load(['donor', 'donation', 'donation.bloodType']);
+        $appointment->load(['donor', 'donation', 'donation.bloodType', 'donation.bloodBags']);
 
         return view('admin.appointments.show', compact('appointment'));
     }
@@ -134,7 +135,7 @@ class AppointmentController extends Controller
     }
 
     /**
-     * Marquer un rendez-vous comme terminé et créer le don
+     * Marquer un rendez-vous comme terminé et créer le don avec les poches de sang
      */
     public function complete(Request $request, Appointment $appointment)
     {
@@ -160,34 +161,81 @@ class AppointmentController extends Controller
             return back()->with('error', 'Le groupe sanguin du donneur est manquant.');
         }
 
-        // Créer le don
-        $donation = Donation::create([
-            'donor_id' => $appointment->donor_id,
-            'bank_id' => $appointment->bank_id,
-            'appointment_id' => $appointment->id,
-            'blood_type_id' => $blood_type_id,
-            'volume' => $request->volume,
-            'quantity' => $request->volume * 1000, // Convertir litres en ml
-            'donation_date' => now(),
-            'status' => 'collected',
-            'notes' => $request->notes
-        ]);
+        try {
+            // Créer le don
+            $donation = Donation::create([
+                'donor_id' => $appointment->donor_id,
+                'bank_id' => $appointment->bank_id,
+                'appointment_id' => $appointment->id,
+                'blood_type_id' => $blood_type_id,
+                'volume' => $request->volume,
+                'quantity' => $request->volume * 1000, // Convertir litres en ml
+                'donation_date' => now(),
+                'status' => 'collected',
+                'notes' => $request->notes
+            ]);
 
-        // Mettre à jour le stock de la banque
-        $stock = BloodStock::firstOrCreate([
-            'bank_id' => $appointment->bank_id,
-            'blood_type_id' => $blood_type_id
-        ]);
-        $stock->quantity += $donation->quantity;
-        $stock->save();
+            // Créer automatiquement les poches de sang
+            $totalVolumeMl = $donation->quantity;
+            $bagsToCreate = floor($totalVolumeMl / 450);
+            $remainingVolume = $totalVolumeMl % 450;
 
-        // Marquer le rendez-vous comme terminé
-        $appointment->update([
-            'status' => 'completed',
-            'completed_at' => now()
-        ]);
+            // Créer les poches de 450ml
+            for ($i = 0; $i < $bagsToCreate; $i++) {
+                $bagNumber = $this->generateBagNumber($bank);
 
-        return back()->with('success', 'Don enregistré avec succès.');
+                BloodBag::create([
+                    'bag_number' => $bagNumber,
+                    'donation_id' => $donation->id,
+                    'donor_id' => $donation->donor_id,
+                    'bank_id' => $donation->bank_id,
+                    'blood_type_id' => $donation->blood_type_id,
+                    'volume_ml' => 450,
+                    'collection_date' => $donation->donation_date,
+                    'expiry_date' => $donation->donation_date->addDays(42), // 42 jours pour les poches
+                    'status' => 'available',
+                    'notes' => "Poche créée automatiquement lors du don #{$donation->id}"
+                ]);
+            }
+
+            // Créer une poche supplémentaire avec le volume restant si > 200ml
+            if ($remainingVolume >= 200) {
+                $bagNumber = $this->generateBagNumber($bank);
+
+                BloodBag::create([
+                    'bag_number' => $bagNumber,
+                    'donation_id' => $donation->id,
+                    'donor_id' => $donation->donor_id,
+                    'bank_id' => $donation->bank_id,
+                    'blood_type_id' => $donation->blood_type_id,
+                    'volume_ml' => $remainingVolume,
+                    'collection_date' => $donation->donation_date,
+                    'expiry_date' => $donation->donation_date->addDays(42),
+                    'status' => 'available',
+                    'notes' => "Poche créée automatiquement lors du don #{$donation->id} (volume restant)"
+                ]);
+            }
+
+            // Mettre à jour le stock de la banque (maintenant basé sur les poches)
+            $bloodStock = BloodStock::firstOrCreate([
+                'bank_id' => $appointment->bank_id,
+                'blood_type_id' => $blood_type_id
+            ]);
+
+            // Mettre à jour les statistiques du stock
+            StockHelper::updateStockStatistics($bloodStock);
+
+            // Marquer le rendez-vous comme terminé
+            $appointment->update([
+                'status' => 'completed',
+                'completed_at' => now()
+            ]);
+
+            return back()->with('success', 'Don enregistré avec succès. ' . ($bagsToCreate + ($remainingVolume >= 200 ? 1 : 0)) . ' poche(s) créée(s).');
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Erreur lors de l\'enregistrement du don : ' . $e->getMessage());
+        }
     }
 
     /**
@@ -246,5 +294,29 @@ class AppointmentController extends Controller
             ->get();
 
         return view('admin.appointments.statistics', compact('statusStats', 'monthlyStats', 'todayAppointments'));
+    }
+
+    /**
+     * Générer un numéro de poche unique
+     */
+    private function generateBagNumber($bank)
+    {
+        $prefix = strtoupper(substr($bank->name, 0, 3));
+        $year = date('Y');
+        $month = date('m');
+
+        // Trouver le dernier numéro pour ce mois
+        $lastBag = BloodBag::where('bag_number', 'like', "{$prefix}{$year}{$month}%")
+            ->orderBy('bag_number', 'desc')
+            ->first();
+
+        if ($lastBag) {
+            $lastNumber = intval(substr($lastBag->bag_number, -4));
+            $newNumber = $lastNumber + 1;
+        } else {
+            $newNumber = 1;
+        }
+
+        return $prefix . $year . $month . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
     }
 }

@@ -289,9 +289,11 @@
                 <div class="space-y-4 max-h-96 overflow-y-auto" id="banksList">
                     @foreach($banks as $bank)
                         @php
-                            $totalStock = $bank->bloodStocks->sum('quantity');
-                            $totalStockL = $totalStock / 1000;
-                            $criticalCount = $bank->bloodStocks->filter(function($stock) { return $stock->isCritical(); })->count();
+                            $statistics = \App\Helpers\StockHelper::getDashboardStatistics($bank);
+                            $totalBags = $statistics['total_bags'];
+                            $availableBags = $statistics['available_bags'];
+                            $totalVolumeL = $statistics['total_volume_l'];
+                            $criticalStocks = $statistics['critical_stocks'];
                         @endphp
                         <div class="bank-card border border-gray-200 rounded-xl p-4 hover:shadow-lg transition-all"
                              data-bank-id="{{ $bank->id }}"
@@ -299,8 +301,8 @@
                             <div class="flex justify-between items-start mb-3">
                                 <h3 class="font-bold text-gray-900 text-lg">{{ $bank->name }}</h3>
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                    {{ $criticalCount > 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
-                                    {{ $criticalCount > 0 ? 'Critique' : 'Disponible' }}
+                                    {{ $criticalStocks > 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
+                                    {{ $criticalStocks > 0 ? 'Critique' : 'Disponible' }}
                                 </span>
                             </div>
 
@@ -313,8 +315,8 @@
 
                             <div class="flex justify-between items-center">
                                 <div class="text-sm">
-                                    <span class="font-medium text-gray-900">{{ number_format($totalStock) }}</span>
-                                    <span class="text-gray-500">ml ({{ number_format($totalStockL, 1) }} L)</span>
+                                    <span class="font-medium text-gray-900">{{ $totalBags }}</span>
+                                    <span class="text-gray-500">poches ({{ number_format($totalVolumeL, 1) }} L)</span>
                                 </div>
                                 <button class="text-red-600 hover:text-red-800 text-sm font-medium">
                                     <i class="fas fa-map-marker-alt mr-1"></i>Voir détails
@@ -383,14 +385,28 @@ function addBankMarkers() {
 
     banks.forEach(bank => {
         if (bank.latitude && bank.longitude) {
-            const criticalCount = bank.blood_stocks.filter(stock => stock.is_critical).length;
-            const totalStock = bank.blood_stocks.reduce((sum, stock) => sum + stock.quantity, 0);
+            // Utiliser les statistiques des poches si disponibles, sinon calculer depuis les stocks
+            let totalBags = 0;
+            let totalVolumeL = 0;
+            let criticalStocks = 0;
+
+            if (bank.statistics) {
+                // Données déjà calculées par le contrôleur
+                totalBags = bank.statistics.total_bags || 0;
+                totalVolumeL = bank.statistics.total_volume_l || 0;
+                criticalStocks = bank.statistics.critical_stocks || 0;
+            } else {
+                // Fallback vers l'ancien système pour compatibilité
+                criticalStocks = bank.blood_stocks.filter(stock => stock.status === 'critical').length;
+                totalBags = bank.blood_stocks.reduce((sum, stock) => sum + (stock.total_bags || 0), 0);
+                totalVolumeL = (totalBags * 450) / 1000;
+            }
 
             // Créer une icône personnalisée basée sur le statut
-            const iconColor = criticalCount > 0 ? '#dc2626' : '#059669';
+            const iconColor = criticalStocks > 0 ? '#dc2626' : '#059669';
             const icon = L.divIcon({
                 className: 'custom-div-icon',
-                html: `<div style="background-color: ${iconColor}; width: 25px; height: 25px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px;">${criticalCount > 0 ? '!' : '✓'}</div>`,
+                html: `<div style="background-color: ${iconColor}; width: 25px; height: 25px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px;">${criticalStocks > 0 ? '!' : '✓'}</div>`,
                 iconSize: [25, 25],
                 iconAnchor: [12, 12]
             });
@@ -404,8 +420,8 @@ function addBankMarkers() {
                         <p class="text-sm text-gray-500 mb-1">📞 ${bank.contact_phone}</p>
                         <p class="text-sm text-gray-500 mb-3">✉️ ${bank.contact_email}</p>
                         <div class="mb-3">
-                            <span class="text-sm font-medium">Stock total: ${totalStock.toLocaleString()} ml (${(totalStock/1000).toFixed(1)} L)</span>
-                            ${criticalCount > 0 ? `<span class="ml-2 text-red-600 text-sm">⚠️ ${criticalCount} stock(s) critique(s)</span>` : ''}
+                            <span class="text-sm font-medium">${totalBags} poche(s) (${totalVolumeL.toFixed(1)} L)</span>
+                            ${criticalStocks > 0 ? `<span class="ml-2 text-red-600 text-sm">⚠️ ${criticalStocks} stock(s) critique(s)</span>` : ''}
                         </div>
                         <div class="flex space-x-2">
                             <button onclick="showBankDetails(${bank.id})"
@@ -484,22 +500,35 @@ function showBankDetails(bankId) {
 
                     <div class="bg-gray-50 rounded-xl p-6">
                         <div class="flex justify-between items-center mb-4">
-                            <h4 class="text-lg font-semibold text-gray-900">Stocks de sang</h4>
+                            <h4 class="text-lg font-semibold text-gray-900">Poches de sang disponibles</h4>
                             <div class="text-sm text-gray-600">
-                                Total: <span class="font-semibold">${bank.total_stocks.toLocaleString()} ml</span>
-                                (${bank.total_stocks_l.toFixed(1)} L)
+                                Total: <span class="font-semibold">${bank.statistics ? bank.statistics.total_bags : 0} poche(s)</span>
+                                (${bank.statistics ? bank.statistics.total_volume_l.toFixed(1) : 0} L)
                             </div>
                         </div>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            ${bank.stocks.map(stock => `
-                                <div class="stock-item ${getStockClass(stock.status)}">
-                                    <div class="text-2xl font-bold text-gray-900">${stock.blood_type}</div>
-                                    <div class="text-lg font-semibold ${getStockTextClass(stock.status)}">${stock.quantity.toLocaleString()}</div>
-                                    <div class="text-xs text-gray-500">ml (${stock.quantity_l.toFixed(1)} L)</div>
-                                    ${stock.is_critical ? '<div class="text-xs text-red-600 font-medium mt-1">CRITIQUE</div>' : ''}
-                                    <div class="text-xs text-gray-400 mt-1">Seuil: ${stock.critical_level} ml</div>
-                                </div>
-                            `).join('')}
+                            ${bank.detailed_stats && bank.detailed_stats.by_blood_type ?
+                                Object.entries(bank.detailed_stats.by_blood_type).map(([bloodType, stats]) => `
+                                    <div class="stock-item ${getStockClass(stats.count > 0 ? 'normal' : 'critical')}">
+                                        <div class="text-2xl font-bold text-gray-900">${bloodType}</div>
+                                        <div class="text-lg font-semibold ${getStockTextClass(stats.count > 0 ? 'normal' : 'critical')}">${stats.count}</div>
+                                        <div class="text-xs text-gray-500">poche(s) (${stats.volume_l.toFixed(1)} L)</div>
+                                        ${stats.available > 0 ? `<div class="text-xs text-green-600 font-medium mt-1">${stats.available} disponible(s)</div>` : ''}
+                                        ${stats.reserved > 0 ? `<div class="text-xs text-yellow-600 font-medium mt-1">${stats.reserved} réservée(s)</div>` : ''}
+                                        ${stats.count === 0 ? '<div class="text-xs text-red-600 font-medium mt-1">CRITIQUE</div>' : ''}
+                                    </div>
+                                `).join('') :
+                                // Fallback vers l'ancien système
+                                (bank.stocks ? bank.stocks.map(stock => `
+                                    <div class="stock-item ${getStockClass(stock.status)}">
+                                        <div class="text-2xl font-bold text-gray-900">${stock.blood_type}</div>
+                                        <div class="text-lg font-semibold ${getStockTextClass(stock.status)}">${stock.quantity.toLocaleString()}</div>
+                                        <div class="text-xs text-gray-500">ml (${stock.quantity_l.toFixed(1)} L)</div>
+                                        ${stock.is_critical ? '<div class="text-xs text-red-600 font-medium mt-1">CRITIQUE</div>' : ''}
+                                        <div class="text-xs text-gray-400 mt-1">Seuil: ${stock.critical_level} ml</div>
+                                    </div>
+                                `).join('') : '<div class="col-span-4 text-center text-gray-500">Aucune donnée disponible</div>')
+                            }
                         </div>
                     </div>
 
@@ -680,9 +709,22 @@ function updateBanksList(banks) {
     }
 
     container.innerHTML = banks.map(bank => {
-        const totalStock = bank.total_stocks || 0;
-        const totalStockL = totalStock / 1000;
-        const criticalCount = bank.critical_stocks || 0;
+        // Utiliser les statistiques des poches si disponibles
+        let totalBags = 0;
+        let totalVolumeL = 0;
+        let criticalStocks = 0;
+
+        if (bank.statistics) {
+            totalBags = bank.statistics.total_bags || 0;
+            totalVolumeL = bank.statistics.total_volume_l || 0;
+            criticalStocks = bank.statistics.critical_stocks || 0;
+        } else {
+            // Fallback vers l'ancien système
+            const totalStock = bank.total_stocks || 0;
+            totalBags = Math.floor(totalStock / 450); // Convertir ml en poches
+            totalVolumeL = totalStock / 1000;
+            criticalStocks = bank.critical_stocks || 0;
+        }
 
         return `
             <div class="bank-card border border-gray-200 rounded-xl p-4 hover:shadow-lg transition-all"
@@ -691,8 +733,8 @@ function updateBanksList(banks) {
                 <div class="flex justify-between items-start mb-3">
                     <h3 class="font-bold text-gray-900 text-lg">${bank.name}</h3>
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                        ${criticalCount > 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }">
-                        ${criticalCount > 0 ? 'Critique' : 'Disponible'}
+                        ${criticalStocks > 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }">
+                        ${criticalStocks > 0 ? 'Critique' : 'Disponible'}
                     </span>
                 </div>
 
@@ -706,8 +748,8 @@ function updateBanksList(banks) {
 
                 <div class="flex justify-between items-center">
                     <div class="text-sm">
-                        <span class="font-medium text-gray-900">${totalStock.toLocaleString()}</span>
-                        <span class="text-gray-500">ml (${totalStockL.toFixed(1)} L)</span>
+                        <span class="font-medium text-gray-900">${totalBags}</span>
+                        <span class="text-gray-500">poche(s) (${totalVolumeL.toFixed(1)} L)</span>
                     </div>
                     <button class="text-red-600 hover:text-red-800 text-sm font-medium">
                         <i class="fas fa-map-marker-alt mr-1"></i>Voir détails

@@ -6,6 +6,8 @@ use App\Models\BloodStock;
 use App\Models\BloodBag;
 use App\Models\Bank;
 use App\Models\BloodType;
+use App\Models\BloodBagReservation;
+use App\Models\BloodBagMovement;
 
 class StockHelper
 {
@@ -125,6 +127,42 @@ class StockHelper
     }
 
     /**
+     * Get expiring soon statistics for a bank.
+     */
+    public static function getExpiringSoonStatistics(Bank $bank): array
+    {
+        $expiringBags = BloodBag::where('bank_id', $bank->id)
+            ->where('status', 'available')
+            ->where('expiry_date', '<=', now()->addDays(7))
+            ->where('expiry_date', '>', now())
+            ->count();
+
+        $expiredToday = BloodBag::where('bank_id', $bank->id)
+            ->where('status', 'available')
+            ->whereDate('expiry_date', today())
+            ->count();
+
+        $expiredTomorrow = BloodBag::where('bank_id', $bank->id)
+            ->where('status', 'available')
+            ->whereDate('expiry_date', now()->addDay())
+            ->count();
+
+        $expiredThisWeek = BloodBag::where('bank_id', $bank->id)
+            ->where('status', 'available')
+            ->where('expiry_date', '<=', now()->addDays(7))
+            ->where('expiry_date', '>', now())
+            ->count();
+
+        return [
+            'total_expiring_soon' => $expiringBags,
+            'total_expiring' => $expiringBags, // Alias pour compatibilité avec la vue
+            'expired_today' => $expiredToday,
+            'expired_tomorrow' => $expiredTomorrow,
+            'expired_this_week' => $expiredThisWeek,
+        ];
+    }
+
+    /**
      * Get active reservations for a bank.
      */
     public static function getActiveReservations(Bank $bank): array
@@ -138,6 +176,103 @@ class StockHelper
             }, 'bloodType'])
             ->get()
             ->toArray();
+    }
+
+    /**
+     * Get movement statistics for a bank.
+     */
+    public static function getMovementStatistics(Bank $bank): array
+    {
+        $today = now()->startOfDay();
+        $thisWeek = now()->startOfWeek();
+        $thisMonth = now()->startOfMonth();
+
+        // Mouvements d'aujourd'hui
+        $movementsToday = BloodBagMovement::where('bank_id', $bank->id)
+            ->whereDate('movement_date', $today)
+            ->count();
+
+        // Mouvements de cette semaine
+        $movementsThisWeek = BloodBagMovement::where('bank_id', $bank->id)
+            ->where('movement_date', '>=', $thisWeek)
+            ->count();
+
+        // Mouvements de ce mois
+        $movementsThisMonth = BloodBagMovement::where('bank_id', $bank->id)
+            ->where('movement_date', '>=', $thisMonth)
+            ->count();
+
+        // Mouvements par type
+        $movementsByType = BloodBagMovement::where('bank_id', $bank->id)
+            ->selectRaw('movement_type, COUNT(*) as count')
+            ->groupBy('movement_type')
+            ->pluck('count', 'movement_type')
+            ->toArray();
+
+        // Mouvements récents (7 derniers jours)
+        $recentMovements = BloodBagMovement::where('bank_id', $bank->id)
+            ->where('movement_date', '>=', now()->subDays(7))
+            ->with(['bloodBag.bloodType'])
+            ->orderBy('movement_date', 'desc')
+            ->limit(10)
+            ->get();
+
+        return [
+            'movements_today' => $movementsToday,
+            'movements_this_week' => $movementsThisWeek,
+            'movements_this_month' => $movementsThisMonth,
+            'movements_by_type' => $movementsByType,
+            'recent_movements' => $recentMovements,
+            'total_movements' => BloodBagMovement::where('bank_id', $bank->id)->count(),
+        ];
+    }
+
+    /**
+     * Get reservation statistics for a bank.
+     */
+    public static function getReservationStatistics(Bank $bank): array
+    {
+        $activeReservations = BloodBagReservation::where('bank_id', $bank->id)
+            ->where('status', 'active')
+            ->count();
+
+        $expiredReservations = BloodBagReservation::where('bank_id', $bank->id)
+            ->where('status', 'expired')
+            ->count();
+
+        $cancelledReservations = BloodBagReservation::where('bank_id', $bank->id)
+            ->where('status', 'cancelled')
+            ->count();
+
+        $completedReservations = BloodBagReservation::where('bank_id', $bank->id)
+            ->where('status', 'completed')
+            ->count();
+
+        $urgentReservations = BloodBagReservation::where('bank_id', $bank->id)
+            ->where('status', 'active')
+            ->where('urgency_level', 'urgent')
+            ->count();
+
+        $criticalReservations = BloodBagReservation::where('bank_id', $bank->id)
+            ->where('status', 'active')
+            ->where('urgency_level', 'critical')
+            ->count();
+
+        $expiringSoonReservations = BloodBagReservation::where('bank_id', $bank->id)
+            ->where('status', 'active')
+            ->where('expiry_date', '<=', now()->addHours(24))
+            ->count();
+
+        return [
+            'active_count' => $activeReservations,
+            'expired_count' => $expiredReservations,
+            'cancelled_count' => $cancelledReservations,
+            'completed_count' => $completedReservations,
+            'urgent_count' => $urgentReservations,
+            'critical_count' => $criticalReservations,
+            'expiring_soon_count' => $expiringSoonReservations,
+            'total' => $activeReservations + $expiredReservations + $cancelledReservations + $completedReservations,
+        ];
     }
 
     /**
@@ -161,9 +296,78 @@ class StockHelper
             'expiring_soon_bags' => $expiringSoonBags,
             'total_volume_l' => ($totalBags * 450) / 1000,
             'available_volume_l' => ($availableBags * 450) / 1000,
+            'reserved_volume_l' => ($reservedBags * 450) / 1000,
             'critical_stocks' => $criticalStocks,
             'low_stocks' => $lowStocks,
             'stock_summary' => self::getStockSummary($bank),
+        ];
+    }
+
+    /**
+     * Get detailed statistics for a bank, organized by blood type.
+     */
+    public static function getDetailedStatistics(Bank $bank): array
+    {
+        $stocks = $bank->bloodStocks()->with('bloodType')->get();
+        $bloodTypes = BloodType::orderBy('name')->get();
+
+        $byBloodType = [];
+        $totals = [
+            'count' => 0,
+            'available' => 0,
+            'reserved' => 0,
+            'transfused' => 0,
+            'expired' => 0,
+            'discarded' => 0,
+            'volume_l' => 0,
+            'expiring_soon' => 0
+        ];
+
+        // Initialiser tous les types de sang
+        foreach ($bloodTypes as $bloodType) {
+            $byBloodType[$bloodType->name] = [
+                'count' => 0,
+                'available' => 0,
+                'reserved' => 0,
+                'transfused' => 0,
+                'expired' => 0,
+                'discarded' => 0,
+                'volume_l' => 0,
+                'expiring_soon' => 0
+            ];
+        }
+
+        // Remplir avec les données des stocks existants
+        foreach ($stocks as $stock) {
+            $bloodTypeName = $stock->bloodType->name;
+
+            $byBloodType[$bloodTypeName] = [
+                'count' => $stock->total_bags,
+                'available' => $stock->available_bags,
+                'reserved' => $stock->reserved_bags,
+                'transfused' => $stock->transfused_bags ?? 0,
+                'expired' => $stock->expired_bags ?? 0,
+                'discarded' => $stock->discarded_bags ?? 0,
+                'volume_l' => $stock->getTotalVolumeInLiters(),
+                'expiring_soon' => $stock->expiring_soon_bags,
+                'percentage' => $totals['count'] > 0 ? round(($stock->total_bags / $totals['count']) * 100, 1) : 0
+            ];
+
+            // Ajouter aux totaux
+            $totals['count'] += $stock->total_bags;
+            $totals['available'] += $stock->available_bags;
+            $totals['reserved'] += $stock->reserved_bags;
+            $totals['transfused'] += $stock->transfused_bags ?? 0;
+            $totals['expired'] += $stock->expired_bags ?? 0;
+            $totals['discarded'] += $stock->discarded_bags ?? 0;
+            $totals['volume_l'] += $stock->getTotalVolumeInLiters();
+            $totals['expiring_soon'] += $stock->expiring_soon_bags;
+        }
+
+        return [
+            'by_blood_type' => $byBloodType,
+            'totals' => $totals,
+            'stock_summary' => self::getStockSummary($bank)
         ];
     }
 

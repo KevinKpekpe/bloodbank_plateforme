@@ -16,6 +16,9 @@ class BloodStock extends Model
         'total_bags',
         'available_bags',
         'reserved_bags',
+        'transfused_bags',
+        'expired_bags',
+        'discarded_bags',
         'expiring_soon_bags',
         'critical_level',
         'status',
@@ -118,6 +121,18 @@ class BloodStock extends Model
             ->where('status', 'reserved')
             ->count();
 
+        $transfusedBags = $this->bloodBags()
+            ->where('status', 'transfused')
+            ->count();
+
+        $expiredBags = $this->bloodBags()
+            ->where('status', 'expired')
+            ->count();
+
+        $discardedBags = $this->bloodBags()
+            ->where('status', 'discarded')
+            ->count();
+
         $expiringSoonBags = $this->bloodBags()
             ->where('status', 'available')
             ->where('expiry_date', '<=', now()->addDays(7))
@@ -127,6 +142,9 @@ class BloodStock extends Model
             'total_bags' => $totalBags,
             'available_bags' => $availableBags,
             'reserved_bags' => $reservedBags,
+            'transfused_bags' => $transfusedBags,
+            'expired_bags' => $expiredBags,
+            'discarded_bags' => $discardedBags,
             'expiring_soon_bags' => $expiringSoonBags,
             'quantity' => $totalBags * 450, // Pour compatibilité
             'last_updated' => now(),

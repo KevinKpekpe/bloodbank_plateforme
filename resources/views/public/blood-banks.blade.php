@@ -38,8 +38,12 @@
 
                     <div class="border-t pt-4">
                         <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">Stocks totaux:</span>
-                            <span class="font-semibold text-blue-600">{{ $bank->total_stocks ?? 0 }}</span>
+                            <span class="text-sm text-gray-600">Poches disponibles:</span>
+                            <span class="font-semibold text-blue-600">{{ $bank->available_stocks ?? '0 poches' }}</span>
+                        </div>
+                        <div class="flex justify-between items-center mt-1">
+                            <span class="text-sm text-gray-600">Volume total:</span>
+                            <span class="font-semibold text-gray-900">{{ $bank->total_stocks ?? '0L' }}</span>
                         </div>
                         @if(isset($bank->critical_stocks) && $bank->critical_stocks > 0)
                             <div class="flex justify-between items-center mt-1">

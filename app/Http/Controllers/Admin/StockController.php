@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Bank;
 use App\Models\BloodStock;
 use App\Models\BloodType;
+use App\Models\BloodBag;
+use App\Helpers\StockHelper;
 use Illuminate\Http\Request;
 
 class StockController extends Controller
@@ -26,10 +28,9 @@ class StockController extends Controller
     {
         $bank = $this->getAdminBank();
 
-        $stocks = BloodStock::where('bank_id', $bank->id)
-            ->with(['bloodType'])
-            ->orderBy('blood_type_id')
-            ->get();
+        // Utiliser le helper pour obtenir les statistiques basées sur les poches
+        $statistics = StockHelper::getDashboardStatistics($bank);
+        $detailedStats = StockHelper::getDetailedStatistics($bank);
 
         // Récupérer tous les types de sang pour afficher ceux qui n'ont pas de stock
         $allBloodTypes = BloodType::orderBy('name')->get();
@@ -37,14 +38,19 @@ class StockController extends Controller
         // Créer un tableau avec tous les types de sang et leurs stocks
         $stockSummary = [];
         foreach ($allBloodTypes as $bloodType) {
-            $stock = $stocks->where('blood_type_id', $bloodType->id)->first();
+            $bloodTypeStats = $detailedStats['by_blood_type'][$bloodType->name] ?? [];
+            $stock = BloodStock::where('bank_id', $bank->id)
+                ->where('blood_type_id', $bloodType->id)
+                ->first();
 
             if ($stock) {
-                // Utiliser la même logique que l'inventaire des dons
                 $stockSummary[] = [
                     'blood_type' => $bloodType,
                     'stock' => $stock,
-                    'quantity' => $stock->quantity,
+                    'quantity' => $bloodTypeStats['count'] ?? 0, // Nombre de poches
+                    'volume_l' => $bloodTypeStats['volume_l'] ?? 0, // Volume en litres
+                    'available_bags' => $bloodTypeStats['available'] ?? 0,
+                    'reserved_bags' => $bloodTypeStats['reserved'] ?? 0,
                     'critical_level' => $stock->critical_level,
                     'is_low' => $stock->isLow(),
                     'is_critical' => $stock->isCritical(),
@@ -56,6 +62,9 @@ class StockController extends Controller
                     'blood_type' => $bloodType,
                     'stock' => null,
                     'quantity' => 0,
+                    'volume_l' => 0,
+                    'available_bags' => 0,
+                    'reserved_bags' => 0,
                     'critical_level' => 0,
                     'is_low' => true,
                     'is_critical' => true,
@@ -64,7 +73,7 @@ class StockController extends Controller
             }
         }
 
-        return view('admin.stocks.index', compact('stockSummary', 'bank'));
+        return view('admin.stocks.index', compact('stockSummary', 'bank', 'statistics'));
     }
 
     /**
@@ -94,7 +103,6 @@ class StockController extends Controller
 
         $request->validate([
             'blood_type_id' => 'required|exists:blood_types,id',
-            'quantity' => 'required|integer|min:0',
             'critical_level' => 'required|integer|min:1',
         ]);
 
@@ -112,11 +120,14 @@ class StockController extends Controller
         $stock = BloodStock::create([
             'bank_id' => $bank->id,
             'blood_type_id' => $request->blood_type_id,
-            'quantity' => $request->quantity,
+            'quantity' => 0, // Sera calculé automatiquement
             'critical_level' => $request->critical_level,
             'status' => 'normal',
             'last_updated' => now(),
         ]);
+
+        // Mettre à jour les statistiques du stock
+        StockHelper::updateStockStatistics($stock);
 
         return redirect()->route('admin.stocks.index')
             ->with('success', 'Stock de sang créé avec succès.');
@@ -152,15 +163,16 @@ class StockController extends Controller
         }
 
         $request->validate([
-            'quantity' => 'required|integer|min:0',
             'critical_level' => 'required|integer|min:1',
         ]);
 
         $stock->update([
-            'quantity' => $request->quantity,
             'critical_level' => $request->critical_level,
             'last_updated' => now(),
         ]);
+
+        // Mettre à jour les statistiques du stock
+        StockHelper::updateStockStatistics($stock);
 
         return redirect()->route('admin.stocks.index')
             ->with('success', 'Stock de sang mis à jour avec succès.');
@@ -178,9 +190,14 @@ class StockController extends Controller
             abort(403);
         }
 
-        // Vérifier qu'il n'y a pas de dons associés
-        if ($stock->quantity > 0) {
-            return back()->with('error', 'Impossible de supprimer un stock qui contient du sang.');
+        // Vérifier qu'il n'y a pas de poches associées
+        $bloodBagsCount = BloodBag::where('bank_id', $bank->id)
+            ->where('blood_type_id', $stock->blood_type_id)
+            ->whereIn('status', ['available', 'reserved'])
+            ->count();
+
+        if ($bloodBagsCount > 0) {
+            return back()->with('error', 'Impossible de supprimer un stock qui contient des poches de sang.');
         }
 
         $stock->delete();
@@ -217,7 +234,6 @@ class StockController extends Controller
         $request->validate([
             'stocks' => 'required|array|min:1',
             'stocks.*.blood_type_id' => 'required|exists:blood_types,id',
-            'stocks.*.quantity' => 'required|integer|min:0',
             'stocks.*.critical_level' => 'required|integer|min:1',
         ]);
 
@@ -240,11 +256,14 @@ class StockController extends Controller
             $stock = BloodStock::create([
                 'bank_id' => $bank->id,
                 'blood_type_id' => $stockData['blood_type_id'],
-                'quantity' => $stockData['quantity'],
+                'quantity' => 0, // Sera calculé automatiquement
                 'critical_level' => $stockData['critical_level'],
                 'status' => 'normal',
                 'last_updated' => now(),
             ]);
+
+            // Mettre à jour les statistiques du stock
+            StockHelper::updateStockStatistics($stock);
 
             $createdCount++;
         }

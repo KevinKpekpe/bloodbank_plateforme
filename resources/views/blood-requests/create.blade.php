@@ -76,9 +76,8 @@
                     </label>
                     <select name="urgency_level" id="urgency_level" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500" required>
                         <option value="">Sélectionnez le niveau d'urgence</option>
-                        <option value="low" {{ old('urgency_level') == 'low' ? 'selected' : '' }}>Faible - Planifié</option>
-                        <option value="medium" {{ old('urgency_level') == 'medium' ? 'selected' : '' }}>Moyenne - Dans les 24h</option>
-                        <option value="high" {{ old('urgency_level') == 'high' ? 'selected' : '' }}>Élevée - Dans les 6h</option>
+                        <option value="normal" {{ old('urgency_level') == 'normal' ? 'selected' : '' }}>Normal - Planifié</option>
+                        <option value="urgent" {{ old('urgency_level') == 'urgent' ? 'selected' : '' }}>Urgent - Dans les 24h</option>
                         <option value="critical" {{ old('urgency_level') == 'critical' ? 'selected' : '' }}>Critique - Immédiat</option>
                     </select>
                 </div>

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Bank;
 use App\Models\BloodStock;
 use App\Models\BloodType;
+use App\Models\BloodBag;
+use App\Helpers\StockHelper;
 use Illuminate\Http\Request;
 
 class BloodBankMapController extends Controller
@@ -24,18 +26,19 @@ class BloodBankMapController extends Controller
         // Récupérer tous les types de sang pour l'affichage
         $bloodTypes = BloodType::orderBy('name')->get();
 
-        // Calculer les statistiques globales (en ml)
-        $totalStocks = $banks->sum(function ($bank) {
-            return $bank->bloodStocks->sum('quantity');
-        });
+        // Calculer les statistiques globales en utilisant les poches
+        $totalStocks = 0;
+        $totalBags = 0;
+        $criticalStocks = 0;
 
-        $criticalStocks = $banks->sum(function ($bank) {
-            return $bank->bloodStocks->filter(function ($stock) {
-                return $stock->isCritical();
-            })->count();
-        });
+        foreach ($banks as $bank) {
+            $statistics = StockHelper::getDashboardStatistics($bank);
+            $totalStocks += $statistics['total_volume_l'];
+            $totalBags += $statistics['total_bags'];
+            $criticalStocks += $statistics['critical_bags'] ?? 0;
+        }
 
-        return view('blood-bank-map.index', compact('banks', 'bloodTypes', 'totalStocks', 'criticalStocks'));
+        return view('blood-bank-map.index', compact('banks', 'bloodTypes', 'totalStocks', 'totalBags', 'criticalStocks'));
     }
 
     /**
@@ -43,162 +46,69 @@ class BloodBankMapController extends Controller
      */
     public function bankDetails(Bank $bank)
     {
-        if (!$bank->latitude || !$bank->longitude) {
-            return response()->json(['error' => 'Coordonnées non disponibles'], 404);
+        if ($bank->status !== 'active') {
+            return response()->json(['error' => 'Banque non active'], 404);
         }
 
-        // Charger les stocks avec les types de sang
         $bank->load(['bloodStocks.bloodType']);
 
-        // Formater les données des stocks
-        $stocks = $bank->bloodStocks->map(function ($stock) {
-            return [
-                'blood_type' => $stock->bloodType->name,
-                'quantity' => $stock->quantity, // en ml
-                'quantity_l' => $stock->quantity / 1000, // en litres
-                'critical_level' => $stock->critical_level,
-                'status' => $stock->status,
-                'is_low' => $stock->isLow(),
-                'is_critical' => $stock->isCritical(),
-                'is_high' => $stock->isHigh(),
-                'last_updated' => $stock->last_updated
-            ];
+        // Ajouter les statistiques détaillées des poches
+        $statistics = StockHelper::getDashboardStatistics($bank);
+        $detailedStats = StockHelper::getDetailedStatistics($bank);
+
+        $bank->statistics = $statistics;
+        $bank->detailed_stats = $detailedStats;
+
+        return response()->json($bank);
+    }
+
+    /**
+     * API pour obtenir toutes les banques avec leurs stocks
+     */
+    public function getAllBanks()
+    {
+        $banks = Bank::where('status', 'active')
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->with(['bloodStocks.bloodType'])
+            ->get();
+
+        // Ajouter les statistiques des poches pour chaque banque
+        $banks->each(function ($bank) {
+            $statistics = StockHelper::getDashboardStatistics($bank);
+            $bank->statistics = $statistics;
         });
 
-        $bankData = [
-            'id' => $bank->id,
-            'name' => $bank->name,
-            'address' => $bank->address,
-            'contact_phone' => $bank->contact_phone,
-            'contact_email' => $bank->contact_email,
-            'latitude' => $bank->latitude,
-            'longitude' => $bank->longitude,
-            'status' => $bank->status,
-            'stocks' => $stocks,
-            'total_stocks' => $bank->bloodStocks->sum('quantity'), // en ml
-            'total_stocks_l' => $bank->bloodStocks->sum('quantity') / 1000, // en litres
-            'critical_stocks_count' => $bank->bloodStocks->filter(function ($stock) {
-                return $stock->isCritical();
-            })->count()
-        ];
-
-        return response()->json($bankData);
+        return response()->json($banks);
     }
 
     /**
-     * API pour rechercher des banques par nom ou adresse
+     * API pour rechercher des banques par groupe sanguin
      */
-    public function search(Request $request)
+    public function searchByBloodType(Request $request)
     {
-        try {
-            $request->validate([
-                'query' => 'required|string|min:2'
-            ]);
+        $bloodTypeId = $request->get('blood_type_id');
 
-            $query = $request->query('query');
-
-            $banks = Bank::where('status', 'active')
-                ->whereNotNull('latitude')
-                ->whereNotNull('longitude')
-                ->where(function($q) use ($query) {
-                    $q->where('name', 'like', "%{$query}%")
-                      ->orWhere('address', 'like', "%{$query}%");
-                })
-                ->with(['bloodStocks.bloodType'])
-                ->get();
-
-            // Formater les données pour l'affichage
-            $banks->each(function ($bank) {
-                $bank->total_stocks = $bank->bloodStocks->sum('quantity');
-                $bank->critical_stocks = $bank->bloodStocks->filter(function ($stock) {
-                    return $stock->isCritical();
-                })->count();
-            });
-
-            return response()->json($banks);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+        if (!$bloodTypeId) {
+            return response()->json(['error' => 'ID du groupe sanguin requis'], 400);
         }
-    }
 
-    /**
-     * API pour obtenir les banques proches avec leurs stocks
-     */
-    public function nearby(Request $request)
-    {
-        try {
-            $request->validate([
-                'latitude' => 'required|numeric|between:-90,90',
-                'longitude' => 'required|numeric|between:-180,180',
-                'radius' => 'nullable|numeric|min:1|max:50'
-            ]);
+        $banks = Bank::where('status', 'active')
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->whereHas('bloodStocks', function ($query) use ($bloodTypeId) {
+                $query->where('blood_type_id', $bloodTypeId)
+                      ->where('available_bags', '>', 0); // Poches disponibles
+            })
+            ->with(['bloodStocks.bloodType'])
+            ->get();
 
-            $latitude = $request->latitude;
-            $longitude = $request->longitude;
-            $radius = $request->radius ?? 10;
+        // Ajouter les statistiques des poches pour chaque banque
+        $banks->each(function ($bank) {
+            $statistics = StockHelper::getDashboardStatistics($bank);
+            $bank->statistics = $statistics;
+        });
 
-            // Formule de Haversine pour calculer la distance
-            $banks = Bank::where('status', 'active')
-                ->whereNotNull('latitude')
-                ->whereNotNull('longitude')
-                ->with(['bloodStocks.bloodType'])
-                ->selectRaw('*,
-                    (6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance',
-                    [$latitude, $longitude, $latitude])
-                ->get()
-                ->filter(function($bank) use ($radius) {
-                    return $bank->distance <= $radius;
-                })
-                ->sortBy('distance')
-                ->values();
-
-            // Formater les données pour l'affichage
-            $banks->each(function ($bank) {
-                $bank->total_stocks = $bank->bloodStocks->sum('quantity');
-                $bank->critical_stocks = $bank->bloodStocks->filter(function ($stock) {
-                    return $stock->isCritical();
-                })->count();
-            });
-
-            return response()->json($banks);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
-
-    /**
-     * API pour filtrer par type de sang
-     */
-    public function filterByBloodType(Request $request)
-    {
-        try {
-            $request->validate([
-                'blood_type_id' => 'required|exists:blood_types,id'
-            ]);
-
-            $bloodTypeId = $request->blood_type_id;
-
-            $banks = Bank::where('status', 'active')
-                ->whereNotNull('latitude')
-                ->whereNotNull('longitude')
-                ->whereHas('bloodStocks', function ($query) use ($bloodTypeId) {
-                    $query->where('blood_type_id', $bloodTypeId)
-                          ->where('quantity', '>', 0);
-                })
-                ->with(['bloodStocks.bloodType'])
-                ->get();
-
-            // Formater les données pour l'affichage
-            $banks->each(function ($bank) {
-                $bank->total_stocks = $bank->bloodStocks->sum('quantity');
-                $bank->critical_stocks = $bank->bloodStocks->filter(function ($stock) {
-                    return $stock->isCritical();
-                })->count();
-            });
-
-            return response()->json($banks);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
+        return response()->json($banks);
     }
 }

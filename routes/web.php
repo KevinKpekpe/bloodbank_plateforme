@@ -166,6 +166,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Gestion des poches de sang
     Route::get('/blood-bags', [BloodBagController::class, 'index'])->name('blood-bags.index');
+
+    // Historique et rapports des poches (AVANT les routes avec paramètres)
+    Route::get('/blood-bags/movements', [BloodBagController::class, 'movements'])->name('blood-bags.movements');
+    Route::get('/blood-bags/reservations', [BloodBagController::class, 'reservations'])->name('blood-bags.reservations');
+    Route::get('/blood-bags/expiring-soon', [BloodBagController::class, 'expiringSoon'])->name('blood-bags.expiring-soon');
+    Route::get('/blood-bags/statistics', [BloodBagController::class, 'statistics'])->name('blood-bags.statistics');
+
+    // Routes avec paramètres (APRÈS les routes spécifiques)
     Route::get('/blood-bags/{bloodBag}', [BloodBagController::class, 'show'])->name('blood-bags.show');
     Route::get('/blood-bags/{bloodBag}/reserve', [BloodBagController::class, 'reserve'])->name('blood-bags.reserve');
     Route::post('/blood-bags/{bloodBag}/reserve', [BloodBagController::class, 'storeReservation'])->name('blood-bags.store-reservation');
@@ -173,11 +181,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/blood-bags/{bloodBag}/cancel-reservation', [BloodBagController::class, 'cancelReservation'])->name('blood-bags.cancel-reservation');
     Route::post('/blood-bags/{bloodBag}/discard', [BloodBagController::class, 'discard'])->name('blood-bags.discard');
 
-    // Historique et rapports des poches
-    Route::get('/blood-bags/movements', [BloodBagController::class, 'movements'])->name('blood-bags.movements');
-    Route::get('/blood-bags/reservations', [BloodBagController::class, 'reservations'])->name('blood-bags.reservations');
-    Route::get('/blood-bags/expiring-soon', [BloodBagController::class, 'expiringSoon'])->name('blood-bags.expiring-soon');
-    Route::get('/blood-bags/statistics', [BloodBagController::class, 'statistics'])->name('blood-bags.statistics');
+    // Route pour annuler une réservation spécifique
+    Route::post('/blood-bags/reservations/{reservation}/cancel', [BloodBagController::class, 'cancelSpecificReservation'])->name('blood-bags.reservations.cancel');
+
+    // Route pour jeter en masse les poches expirées
+    Route::post('/blood-bags/bulk-discard', [BloodBagController::class, 'bulkDiscard'])->name('blood-bags.bulk-discard');
 
     // Gestion des utilisateurs (donneurs de la banque)
     Route::get('/users', function () {

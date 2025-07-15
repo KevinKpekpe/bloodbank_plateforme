@@ -125,9 +125,8 @@
                 <label for="urgency_level" class="block text-sm font-medium text-gray-700 mb-1">Niveau d'Urgence</label>
                 <select name="urgency_level" id="urgency_level" class="w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
                     <option value="">Tous les niveaux</option>
-                    <option value="low" {{ request('urgency_level') === 'low' ? 'selected' : '' }}>Faible</option>
-                    <option value="medium" {{ request('urgency_level') === 'medium' ? 'selected' : '' }}>Moyen</option>
-                    <option value="high" {{ request('urgency_level') === 'high' ? 'selected' : '' }}>Élevé</option>
+                    <option value="normal" {{ request('urgency_level') === 'normal' ? 'selected' : '' }}>Normal</option>
+                    <option value="urgent" {{ request('urgency_level') === 'urgent' ? 'selected' : '' }}>Urgent</option>
                     <option value="critical" {{ request('urgency_level') === 'critical' ? 'selected' : '' }}>Critique</option>
                 </select>
             </div>

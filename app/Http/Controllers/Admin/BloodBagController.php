@@ -11,6 +11,8 @@ use App\Models\BloodBagMovement;
 use App\Helpers\StockHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use App\Models\BloodStock; // Added this import
 
 class BloodBagController extends Controller
 {
@@ -20,7 +22,13 @@ class BloodBagController extends Controller
     private function getAdminBank()
     {
         $user = Auth::user();
-        return Bank::where('admin_id', $user->id)->firstOrFail();
+        $bank = $user->managedBank;
+
+        if (!$bank) {
+            abort(403, 'Vous n\'êtes pas associé à une banque de sang.');
+        }
+
+        return $bank;
     }
 
     /**
@@ -129,15 +137,28 @@ class BloodBagController extends Controller
                 'requested_by' => Auth::user()->name,
             ];
 
+            // Vérifier que la poche est disponible
+            if (!$bloodBag->isAvailable()) {
+                throw new \Exception('Cette poche n\'est pas disponible pour réservation.');
+            }
+
             $reservation = $bloodBag->reserveForPatient($patientData, $request->duration);
 
             // Mettre à jour les statistiques du stock
-            StockHelper::updateStockStatistics($bloodBag->bloodStock);
+            $bloodStock = BloodStock::where('bank_id', $bloodBag->bank_id)
+                ->where('blood_type_id', $bloodBag->blood_type_id)
+                ->first();
+
+            if ($bloodStock) {
+                StockHelper::updateStockStatistics($bloodStock);
+            }
 
             return redirect()->route('admin.blood-bags.show', $bloodBag)
                 ->with('success', 'Poche réservée avec succès pour ' . $request->patient_name);
 
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la réservation: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
             return back()->with('error', 'Erreur lors de la réservation : ' . $e->getMessage())
                 ->withInput();
         }
@@ -167,7 +188,13 @@ class BloodBagController extends Controller
             $reservation = $bloodBag->transfuse(Auth::user()->name, $transfusionData);
 
             // Mettre à jour les statistiques du stock
-            StockHelper::updateStockStatistics($bloodBag->bloodStock);
+            $bloodStock = BloodStock::where('bank_id', $bloodBag->bank_id)
+                ->where('blood_type_id', $bloodBag->blood_type_id)
+                ->first();
+
+            if ($bloodStock) {
+                StockHelper::updateStockStatistics($bloodStock);
+            }
 
             return redirect()->route('admin.blood-bags.show', $bloodBag)
                 ->with('success', 'Transfusion effectuée avec succès');
@@ -197,7 +224,13 @@ class BloodBagController extends Controller
             $bloodBag->cancelReservation($request->reason);
 
             // Mettre à jour les statistiques du stock
-            StockHelper::updateStockStatistics($bloodBag->bloodStock);
+            $bloodStock = BloodStock::where('bank_id', $bloodBag->bank_id)
+                ->where('blood_type_id', $bloodBag->blood_type_id)
+                ->first();
+
+            if ($bloodStock) {
+                StockHelper::updateStockStatistics($bloodStock);
+            }
 
             return redirect()->route('admin.blood-bags.show', $bloodBag)
                 ->with('success', 'Réservation annulée avec succès');
@@ -227,7 +260,13 @@ class BloodBagController extends Controller
             $bloodBag->discard($request->reason, Auth::user()->name);
 
             // Mettre à jour les statistiques du stock
-            StockHelper::updateStockStatistics($bloodBag->bloodStock);
+            $bloodStock = BloodStock::where('bank_id', $bloodBag->bank_id)
+                ->where('blood_type_id', $bloodBag->blood_type_id)
+                ->first();
+
+            if ($bloodStock) {
+                StockHelper::updateStockStatistics($bloodStock);
+            }
 
             return redirect()->route('admin.blood-bags.index')
                 ->with('success', 'Poche détruite avec succès');
@@ -252,6 +291,12 @@ class BloodBagController extends Controller
             $query->where('movement_type', $request->movement_type);
         }
 
+        if ($request->filled('blood_type_id')) {
+            $query->whereHas('bloodBag', function ($q) use ($request) {
+                $q->where('blood_type_id', $request->blood_type_id);
+            });
+        }
+
         if ($request->filled('date_from')) {
             $query->where('movement_date', '>=', $request->date_from);
         }
@@ -261,8 +306,9 @@ class BloodBagController extends Controller
         }
 
         $movements = $query->orderBy('movement_date', 'desc')->paginate(20);
+        $bloodTypes = BloodType::orderBy('name')->get();
 
-        return view('admin.blood-bags.movements', compact('movements', 'bank'));
+        return view('admin.blood-bags.movements', compact('movements', 'bank', 'bloodTypes'));
     }
 
     /**
@@ -281,9 +327,26 @@ class BloodBagController extends Controller
             $query->where('urgency_level', $request->urgency_level);
         }
 
-        $reservations = $query->orderBy('expiry_date', 'asc')->paginate(20);
+        if ($request->filled('blood_type_id')) {
+            $query->whereHas('bloodBag', function ($q) use ($request) {
+                $q->where('blood_type_id', $request->blood_type_id);
+            });
+        }
 
-        return view('admin.blood-bags.reservations', compact('reservations', 'bank'));
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('patient_name', 'like', "%{$search}%")
+                  ->orWhere('hospital_name', 'like', "%{$search}%")
+                  ->orWhere('doctor_name', 'like', "%{$search}%")
+                  ->orWhere('patient_id', 'like', "%{$search}%");
+            });
+        }
+
+        $activeReservations = $query->orderBy('expiry_date', 'asc')->paginate(20);
+        $bloodTypes = BloodType::orderBy('name')->get();
+
+        return view('admin.blood-bags.reservations', compact('activeReservations', 'bank', 'bloodTypes'));
     }
 
     /**
@@ -298,9 +361,11 @@ class BloodBagController extends Controller
             ->where('expiry_date', '<=', now()->addDays(7))
             ->with(['bloodType', 'donor'])
             ->orderBy('expiry_date', 'asc')
-            ->get();
+            ->paginate(20);
 
-        return view('admin.blood-bags.expiring-soon', compact('expiringBags', 'bank'));
+        $bloodTypes = BloodType::orderBy('name')->get();
+
+        return view('admin.blood-bags.expiring-soon', compact('expiringBags', 'bank', 'bloodTypes'));
     }
 
     /**
@@ -322,5 +387,93 @@ class BloodBagController extends Controller
             ->count();
 
         return view('admin.blood-bags.statistics', compact('statistics', 'bank'));
+    }
+
+    /**
+     * Annuler une réservation spécifique
+     */
+    public function cancelSpecificReservation(Request $request, BloodBagReservation $reservation)
+    {
+        $bank = $this->getAdminBank();
+
+        // Vérifier que la réservation appartient à la banque de l'admin
+        if ($reservation->bank_id !== $bank->id) {
+            abort(403);
+        }
+
+        $request->validate([
+            'reason' => 'required|string|max:500',
+        ]);
+
+        try {
+            // Annuler la réservation
+            $reservation->update([
+                'status' => 'cancelled',
+                'cancelled_at' => now(),
+                'cancelled_by' => Auth::user()->name,
+                'cancellation_reason' => $request->reason,
+            ]);
+
+            // Libérer la poche
+            $bloodBag = $reservation->bloodBag;
+            $bloodBag->update([
+                'status' => 'available',
+                'reserved_for_patient' => null,
+                'reserved_for_hospital' => null,
+                'reserved_until' => null,
+            ]);
+
+            // Mettre à jour les statistiques du stock
+            $bloodStock = BloodStock::where('bank_id', $bloodBag->bank_id)
+                ->where('blood_type_id', $bloodBag->blood_type_id)
+                ->first();
+
+            if ($bloodStock) {
+                StockHelper::updateStockStatistics($bloodStock);
+            }
+
+            return redirect()->route('admin.blood-bags.reservations')
+                ->with('success', 'Réservation annulée avec succès');
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Erreur lors de l\'annulation : ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Jeter en masse les poches expirées
+     */
+    public function bulkDiscard(Request $request)
+    {
+        $bank = $this->getAdminBank();
+
+        $request->validate([
+            'reason' => 'required|string|max:500',
+        ]);
+
+        try {
+            // Récupérer toutes les poches expirées de la banque
+            $expiredBags = BloodBag::where('bank_id', $bank->id)
+                ->where('status', 'available')
+                ->where('expiry_date', '<=', now())
+                ->get();
+
+            $discardedCount = 0;
+
+            foreach ($expiredBags as $bloodBag) {
+                // Jeter chaque poche expirée
+                $bloodBag->discard($request->reason, Auth::user()->name);
+                $discardedCount++;
+            }
+
+            // Mettre à jour les statistiques de tous les stocks
+            StockHelper::updateAllStockStatistics($bank);
+
+            return redirect()->route('admin.blood-bags.expiring-soon')
+                ->with('success', "{$discardedCount} poche(s) expirée(s) jetée(s) avec succès");
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Erreur lors de la destruction en masse : ' . $e->getMessage());
+        }
     }
 }

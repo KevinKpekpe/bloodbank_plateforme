@@ -124,9 +124,8 @@
                                     <select name="urgency_level" id="urgency_level" required
                                             class="w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
                                         <option value="">Sélectionner le niveau d'urgence</option>
-                                        <option value="low" {{ old('urgency_level') === 'low' ? 'selected' : '' }}>Faible</option>
-                                        <option value="medium" {{ old('urgency_level') === 'medium' ? 'selected' : '' }}>Moyen</option>
-                                        <option value="high" {{ old('urgency_level') === 'high' ? 'selected' : '' }}>Élevé</option>
+                                        <option value="normal" {{ old('urgency_level') === 'normal' ? 'selected' : '' }}>Normal</option>
+                                        <option value="urgent" {{ old('urgency_level') === 'urgent' ? 'selected' : '' }}>Urgent</option>
                                         <option value="critical" {{ old('urgency_level') === 'critical' ? 'selected' : '' }}>Critique</option>
                                     </select>
                                     @error('urgency_level')
@@ -135,19 +134,19 @@
                                 </div>
 
                                 <div>
-                                    <label for="reservation_duration" class="block text-sm font-medium text-gray-700 mb-1">
+                                    <label for="duration" class="block text-sm font-medium text-gray-700 mb-1">
                                         Durée de Réservation <span class="text-red-500">*</span>
                                     </label>
-                                    <select name="reservation_duration" id="reservation_duration" required
+                                    <select name="duration" id="duration" required
                                             class="w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
                                         <option value="">Sélectionner la durée</option>
-                                        <option value="2" {{ old('reservation_duration') === '2' ? 'selected' : '' }}>2 heures</option>
-                                        <option value="4" {{ old('reservation_duration') === '4' ? 'selected' : '' }}>4 heures</option>
-                                        <option value="6" {{ old('reservation_duration') === '6' ? 'selected' : '' }}>6 heures</option>
-                                        <option value="12" {{ old('reservation_duration') === '12' ? 'selected' : '' }}>12 heures</option>
-                                        <option value="24" {{ old('reservation_duration') === '24' ? 'selected' : '' }}>24 heures</option>
+                                        <option value="2" {{ old('duration') === '2' ? 'selected' : '' }}>2 heures</option>
+                                        <option value="4" {{ old('duration') === '4' ? 'selected' : '' }}>4 heures</option>
+                                        <option value="6" {{ old('duration') === '6' ? 'selected' : '' }}>6 heures</option>
+                                        <option value="12" {{ old('duration') === '12' ? 'selected' : '' }}>12 heures</option>
+                                        <option value="24" {{ old('duration') === '24' ? 'selected' : '' }}>24 heures</option>
                                     </select>
-                                    @error('reservation_duration')
+                                    @error('duration')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>

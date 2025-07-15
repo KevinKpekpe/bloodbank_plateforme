@@ -49,9 +49,8 @@
                     <label for="urgency" class="block text-sm font-medium text-gray-700 mb-1">Urgence</label>
                     <select name="urgency" id="urgency" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
                         <option value="">Tous les niveaux</option>
-                        <option value="low" @if(request('urgency') == 'low') selected @endif>Faible</option>
-                        <option value="medium" @if(request('urgency') == 'medium') selected @endif>Moyenne</option>
-                        <option value="high" @if(request('urgency') == 'high') selected @endif>Élevée</option>
+                        <option value="normal" @if(request('urgency') == 'normal') selected @endif>Normal</option>
+                        <option value="urgent" @if(request('urgency') == 'urgent') selected @endif>Urgent</option>
                         <option value="critical" @if(request('urgency') == 'critical') selected @endif>Critique</option>
                     </select>
                 </div>
@@ -128,14 +127,14 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                             @if($request->urgency_level === 'critical') bg-red-100 text-red-800
-                                            @elseif($request->urgency_level === 'high') bg-orange-100 text-orange-800
-                                            @elseif($request->urgency_level === 'medium') bg-yellow-100 text-yellow-800
-                                            @else bg-green-100 text-green-800
+                                            @elseif($request->urgency_level === 'urgent') bg-orange-100 text-orange-800
+                                            @elseif($request->urgency_level === 'normal') bg-green-100 text-green-800
+                                            @else bg-gray-100 text-gray-800
                                             @endif">
                                             @if($request->urgency_level === 'critical') Critique
-                                            @elseif($request->urgency_level === 'high') Élevée
-                                            @elseif($request->urgency_level === 'medium') Moyenne
-                                            @else Faible
+                                            @elseif($request->urgency_level === 'urgent') Urgent
+                                            @elseif($request->urgency_level === 'normal') Normal
+                                            @else Inconnu
                                             @endif
                                         </span>
                                     </td>

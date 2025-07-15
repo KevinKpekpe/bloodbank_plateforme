@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Models\Bank;
 use App\Models\BloodStock;
+use App\Models\BloodBag;
+use App\Helpers\StockHelper;
 use Illuminate\Http\Request;
 
 class UnifiedBloodBankController extends Controller
@@ -16,12 +18,17 @@ class UnifiedBloodBankController extends Controller
             ->with(['bloodStocks.bloodType'])
             ->get();
 
-        // Calculer le total des stocks
-        $totalStocks = $banks->sum(function ($bank) {
-            return $bank->bloodStocks->sum('quantity');
-        });
+        // Calculer le total des stocks en utilisant les statistiques des poches
+        $totalStocks = 0;
+        $totalBags = 0;
 
-        return view('blood-banks.unified', compact('banks', 'totalStocks'));
+        foreach ($banks as $bank) {
+            $statistics = StockHelper::getDashboardStatistics($bank);
+            $totalStocks += $statistics['total_volume_l'];
+            $totalBags += $statistics['total_bags'];
+        }
+
+        return view('blood-banks.unified', compact('banks', 'totalStocks', 'totalBags'));
     }
 
     /**
@@ -37,6 +44,12 @@ class UnifiedBloodBankController extends Controller
             ->with(['bloodStocks.bloodType'])
             ->get();
 
+        // Ajouter les statistiques des poches pour chaque banque
+        $banks->each(function ($bank) {
+            $statistics = StockHelper::getDashboardStatistics($bank);
+            $bank->statistics = $statistics;
+        });
+
         return response()->json($banks);
     }
 
@@ -47,9 +60,13 @@ class UnifiedBloodBankController extends Controller
     {
         $latitude = $request->get('latitude');
         $longitude = $request->get('longitude');
-        $radius = $request->get('radius', 10); // Rayon en km
+        $radius = $request->get('radius', 50); // Rayon en km
 
-        // Formule de calcul de distance (formule de Haversine)
+        if (!$latitude || !$longitude) {
+            return response()->json(['error' => 'Coordonnées requises'], 400);
+        }
+
+        // Calculer la distance avec la formule de Haversine
         $banks = Bank::where('status', 'active')
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
@@ -57,23 +74,54 @@ class UnifiedBloodBankController extends Controller
             ->get()
             ->filter(function ($bank) use ($latitude, $longitude, $radius) {
                 $distance = $this->calculateDistance(
-                    $latitude,
-                    $longitude,
-                    $bank->latitude,
-                    $bank->longitude
+                    $latitude, $longitude,
+                    $bank->latitude, $bank->longitude
                 );
-
-                $bank->distance = $distance;
                 return $distance <= $radius;
             })
-            ->sortBy('distance')
-            ->values();
+            ->sortBy(function ($bank) use ($latitude, $longitude) {
+                return $this->calculateDistance(
+                    $latitude, $longitude,
+                    $bank->latitude, $bank->longitude
+                );
+            });
+
+        // Ajouter les statistiques des poches et la distance pour chaque banque
+        $banks->each(function ($bank) use ($latitude, $longitude) {
+            $statistics = StockHelper::getDashboardStatistics($bank);
+            $bank->statistics = $statistics;
+            $bank->distance = round($this->calculateDistance(
+                $latitude, $longitude,
+                $bank->latitude, $bank->longitude
+            ), 1);
+        });
 
         return response()->json($banks);
     }
 
     /**
-     * Calculer la distance entre deux points (formule de Haversine)
+     * Obtenir les détails d'une banque avec ses stocks
+     */
+    public function bankDetails(Bank $bank)
+    {
+        if ($bank->status !== 'active') {
+            return response()->json(['error' => 'Banque non active'], 404);
+        }
+
+        $bank->load(['bloodStocks.bloodType']);
+
+        // Ajouter les statistiques détaillées des poches
+        $statistics = StockHelper::getDashboardStatistics($bank);
+        $detailedStats = StockHelper::getDetailedStatistics($bank);
+
+        $bank->statistics = $statistics;
+        $bank->detailed_stats = $detailedStats;
+
+        return response()->json($bank);
+    }
+
+    /**
+     * Calculer la distance entre deux points géographiques (formule de Haversine)
      */
     private function calculateDistance($lat1, $lon1, $lat2, $lon2)
     {
@@ -89,17 +137,5 @@ class UnifiedBloodBankController extends Controller
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
 
         return $earthRadius * $c;
-    }
-
-    /**
-     * Obtenir les détails d'une banque spécifique
-     */
-    public function show($id)
-    {
-        $bank = Bank::where('status', 'active')
-            ->with(['bloodStocks.bloodType'])
-            ->findOrFail($id);
-
-        return response()->json($bank);
     }
 }

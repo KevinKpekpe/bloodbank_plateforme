@@ -61,14 +61,14 @@
                     <div class="mt-1">
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
                             @if($bloodRequest->urgency_level === 'critical') bg-red-100 text-red-800
-                            @elseif($bloodRequest->urgency_level === 'high') bg-orange-100 text-orange-800
-                            @elseif($bloodRequest->urgency_level === 'medium') bg-yellow-100 text-yellow-800
-                            @else bg-green-100 text-green-800
+                            @elseif($bloodRequest->urgency_level === 'urgent') bg-orange-100 text-orange-800
+                            @elseif($bloodRequest->urgency_level === 'normal') bg-green-100 text-green-800
+                            @else bg-gray-100 text-gray-800
                             @endif">
                             @if($bloodRequest->urgency_level === 'critical') Critique
-                            @elseif($bloodRequest->urgency_level === 'high') Élevée
-                            @elseif($bloodRequest->urgency_level === 'medium') Moyenne
-                            @else Faible
+                            @elseif($bloodRequest->urgency_level === 'urgent') Urgent
+                            @elseif($bloodRequest->urgency_level === 'normal') Normal
+                            @else Inconnu
                             @endif
                         </span>
                     </div>

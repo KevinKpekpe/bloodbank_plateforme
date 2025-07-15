@@ -222,7 +222,7 @@
                         </svg>
                         <div>
                             <p class="text-sm font-medium text-orange-800">
-                                {{ $noStocks->count }} type(s) de sang sans stock
+                                {{ $noStocks->count() }} type(s) de sang sans stock
                             </p>
                             <p class="text-sm text-orange-600">
                                 {{ $noStocks->pluck('blood_type.name')->implode(', ') }}
