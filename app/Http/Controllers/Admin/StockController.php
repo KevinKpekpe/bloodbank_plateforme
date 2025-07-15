@@ -44,16 +44,27 @@ class StockController extends Controller
                 ->first();
 
             if ($stock) {
+                // Calculer le statut basé sur les poches disponibles
+                $availableBags = $bloodTypeStats['available'] ?? 0;
+                $criticalLevelInBags = $stock->critical_level / 450; // Convertir ml en nombre de poches
+
+                $isLow = $availableBags <= $criticalLevelInBags;
+                $isCritical = $availableBags <= ($criticalLevelInBags * 0.5);
+                $isHigh = $availableBags > ($criticalLevelInBags * 3);
+
                 $stockSummary[] = [
                     'blood_type' => $bloodType,
                     'stock' => $stock,
-                    'quantity' => $bloodTypeStats['count'] ?? 0, // Nombre de poches
+                    'total_bags' => $bloodTypeStats['count'] ?? 0, // Total des poches
+                    'available_bags' => $availableBags, // Poches disponibles
+                    'reserved_bags' => $bloodTypeStats['reserved'] ?? 0, // Poches réservées
+                    'volume_ml' => ($bloodTypeStats['count'] ?? 0) * 450, // Volume en ml
                     'volume_l' => $bloodTypeStats['volume_l'] ?? 0, // Volume en litres
-                    'available_bags' => $bloodTypeStats['available'] ?? 0,
-                    'reserved_bags' => $bloodTypeStats['reserved'] ?? 0,
-                    'critical_level' => $stock->critical_level,
-                    'is_low' => $stock->isLow(),
-                    'is_critical' => $stock->isCritical(),
+                    'critical_level_ml' => $stock->critical_level, // Seuil critique en ml
+                    'critical_level_bags' => $criticalLevelInBags, // Seuil critique en poches
+                    'is_low' => $isLow,
+                    'is_critical' => $isCritical,
+                    'is_high' => $isHigh,
                     'has_stock' => true
                 ];
             } else {
@@ -61,13 +72,16 @@ class StockController extends Controller
                 $stockSummary[] = [
                     'blood_type' => $bloodType,
                     'stock' => null,
-                    'quantity' => 0,
-                    'volume_l' => 0,
+                    'total_bags' => 0,
                     'available_bags' => 0,
                     'reserved_bags' => 0,
-                    'critical_level' => 0,
+                    'volume_ml' => 0,
+                    'volume_l' => 0,
+                    'critical_level_ml' => 0,
+                    'critical_level_bags' => 0,
                     'is_low' => true,
                     'is_critical' => true,
+                    'is_high' => false,
                     'has_stock' => false
                 ];
             }
@@ -84,14 +98,16 @@ class StockController extends Controller
         $bank = $this->getAdminBank();
         $bloodTypes = BloodType::orderBy('name')->get();
 
-        // Récupérer les types de sang qui n'ont pas encore de stock
+        // Récupérer les types de sang qui ont déjà un stock
         $existingStockTypes = BloodStock::where('bank_id', $bank->id)
             ->pluck('blood_type_id')
             ->toArray();
 
+        // Séparer les types disponibles et existants
         $availableBloodTypes = $bloodTypes->whereNotIn('id', $existingStockTypes);
+        $existingBloodTypes = $bloodTypes->whereIn('id', $existingStockTypes);
 
-        return view('admin.stocks.create', compact('availableBloodTypes', 'bank'));
+        return view('admin.stocks.create', compact('availableBloodTypes', 'existingBloodTypes', 'bank'));
     }
 
     /**

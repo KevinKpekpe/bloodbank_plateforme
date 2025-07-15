@@ -86,8 +86,11 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900">
                                     @if($item['has_stock'])
-                                        {{ number_format($item['quantity']) }} ml
-                                        <span class="text-gray-500">({{ number_format($item['quantity'] / 1000, 1) }} L)</span>
+                                        {{ number_format($item['volume_ml']) }} ml
+                                        <span class="text-gray-500">({{ number_format($item['volume_l'], 1) }} L)</span>
+                                        <div class="text-xs text-gray-500">
+                                            {{ $item['total_bags'] }} poches total
+                                        </div>
                                     @else
                                         <span class="text-gray-400">-</span>
                                     @endif
@@ -96,7 +99,10 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900">
                                     @if($item['has_stock'])
-                                        {{ number_format($item['critical_level']) }} ml
+                                        {{ number_format($item['critical_level_ml']) }} ml
+                                        <div class="text-xs text-gray-500">
+                                            ({{ number_format($item['critical_level_bags'], 1) }} poches)
+                                        </div>
                                     @else
                                         <span class="text-gray-400">-</span>
                                     @endif
@@ -104,7 +110,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($item['has_stock'])
-                                    @if($item['quantity'] == 0)
+                                    @if($item['available_bags'] == 0)
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                             Rupture
                                         </span>
@@ -116,11 +122,18 @@
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                                             Faible
                                         </span>
+                                    @elseif($item['is_high'])
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            Élevé
+                                        </span>
                                     @else
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                             Normal
                                         </span>
                                     @endif
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        {{ $item['available_bags'] }} poches disponibles
+                                    </div>
                                 @else
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                         Rupture
@@ -140,7 +153,7 @@
                                        class="text-blue-600 hover:text-blue-900 mr-3">
                                         Modifier
                                     </a>
-                                    @if($item['quantity'] == 0)
+                                    @if($item['available_bags'] == 0)
                                         <form action="{{ route('admin.stocks.destroy', $item['stock']->id) }}"
                                               method="POST" class="inline">
                                             @csrf
@@ -169,17 +182,20 @@
     <!-- Résumé des alertes -->
     @php
         $criticalStocks = collect($stockSummary)->filter(function($item) {
-            return $item['has_stock'] && $item['is_critical'] && $item['quantity'] > 0;
+            return $item['has_stock'] && $item['is_critical'] && $item['available_bags'] > 0;
         });
         $lowStocks = collect($stockSummary)->filter(function($item) {
-            return $item['has_stock'] && $item['is_low'] && !$item['is_critical'] && $item['quantity'] > 0;
+            return $item['has_stock'] && $item['is_low'] && !$item['is_critical'] && $item['available_bags'] > 0;
         });
         $noStocks = collect($stockSummary)->filter(function($item) {
-            return !$item['has_stock'] || ($item['has_stock'] && $item['quantity'] == 0);
+            return !$item['has_stock'] || ($item['has_stock'] && $item['available_bags'] == 0);
+        });
+        $highStocks = collect($stockSummary)->filter(function($item) {
+            return $item['has_stock'] && $item['is_high'];
         });
     @endphp
 
-    @if($criticalStocks->count() > 0 || $lowStocks->count() > 0 || $noStocks->count() > 0)
+    @if($criticalStocks->count() > 0 || $lowStocks->count() > 0 || $noStocks->count() > 0 || $highStocks->count() > 0)
         <div class="bg-white rounded-lg shadow-md p-6">
             <h3 class="text-lg font-medium text-gray-900 mb-4">Alertes</h3>
             <div class="space-y-3">
@@ -226,6 +242,22 @@
                             </p>
                             <p class="text-sm text-orange-600">
                                 {{ $noStocks->pluck('blood_type.name')->implode(', ') }}
+                            </p>
+                        </div>
+                    </div>
+                @endif
+
+                @if($highStocks->count() > 0)
+                    <div class="flex items-center p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <svg class="w-5 h-5 text-blue-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        <div>
+                            <p class="text-sm font-medium text-blue-800">
+                                {{ $highStocks->count() }} stock(s) en niveau élevé
+                            </p>
+                            <p class="text-sm text-blue-600">
+                                {{ $highStocks->pluck('blood_type.name')->implode(', ') }}
                             </p>
                         </div>
                     </div>

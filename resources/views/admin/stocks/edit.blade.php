@@ -17,8 +17,8 @@
                     </svg>
                 </a>
                 <div>
-                    <h2 class="text-xl font-semibold text-gray-900">Modifier le Stock</h2>
-                    <p class="text-gray-600">Modifiez les informations du stock {{ $stock->bloodType->name }}</p>
+                    <h2 class="text-xl font-semibold text-gray-900">Configurer le Stock</h2>
+                    <p class="text-gray-600">Modifiez les paramètres du stock {{ $stock->bloodType->name }}</p>
                 </div>
             </div>
         </div>
@@ -33,23 +33,42 @@
             </div>
         @endif
 
-        <!-- Informations actuelles -->
-        <div class="mb-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
-            <h3 class="text-sm font-medium text-gray-900 mb-3">Informations actuelles</h3>
+        <!-- Statistiques actuelles des poches -->
+        <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 class="text-sm font-medium text-blue-900 mb-3">Statistiques actuelles des poches</h3>
             <div class="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                    <span class="text-gray-600">Groupe sanguin :</span>
-                    <span class="font-medium text-gray-900">{{ $stock->bloodType->name }}</span>
+                    <span class="text-blue-600">Total des poches :</span>
+                    <span class="font-medium text-blue-900">{{ $stock->total_bags ?? 0 }} poches</span>
                 </div>
                 <div>
-                    <span class="text-gray-600">Statut actuel :</span>
+                    <span class="text-blue-600">Poches disponibles :</span>
+                    <span class="font-medium text-blue-900">{{ $stock->available_bags ?? 0 }} poches</span>
+                </div>
+                <div>
+                    <span class="text-blue-600">Poches réservées :</span>
+                    <span class="font-medium text-blue-900">{{ $stock->reserved_bags ?? 0 }} poches</span>
+                </div>
+                <div>
+                    <span class="text-blue-600">Volume total :</span>
+                    <span class="font-medium text-blue-900">{{ number_format(($stock->total_bags ?? 0) * 450) }}ml ({{ number_format((($stock->total_bags ?? 0) * 450) / 1000, 1) }}L)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statut actuel -->
+        <div class="mb-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <h3 class="text-sm font-medium text-gray-900 mb-3">Statut actuel</h3>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <span class="text-gray-600">Statut :</span>
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                        @if($stock->quantity == 0) bg-red-100 text-red-800
+                        @if($stock->available_bags == 0) bg-red-100 text-red-800
                         @elseif($stock->isCritical()) bg-red-100 text-red-800
                         @elseif($stock->isLow()) bg-yellow-100 text-yellow-800
                         @else bg-green-100 text-green-800
                         @endif">
-                        @if($stock->quantity == 0) Rupture
+                        @if($stock->available_bags == 0) Rupture
                         @elseif($stock->isCritical()) Critique
                         @elseif($stock->isLow()) Faible
                         @else Normal
@@ -70,42 +89,58 @@
             @csrf
             @method('PUT')
 
-            <!-- Quantité -->
-            <div>
-                <label for="quantity" class="block text-sm font-medium text-gray-700 mb-2">
-                    Quantité (ml) *
-                </label>
-                <input type="number" name="quantity" id="quantity"
-                       value="{{ old('quantity', $stock->quantity) }}"
-                       class="w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
-                       min="0" step="1" required>
-                <p class="mt-1 text-sm text-gray-500">Quantité actuelle en millilitres</p>
-            </div>
-
             <!-- Seuil critique -->
             <div>
                 <label for="critical_level" class="block text-sm font-medium text-gray-700 mb-2">
-                    Seuil Critique (ml) *
+                    Seuil Critique (nombre de poches) *
                 </label>
                 <input type="number" name="critical_level" id="critical_level"
                        value="{{ old('critical_level', $stock->critical_level) }}"
                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
                        min="1" step="1" required>
-                <p class="mt-1 text-sm text-gray-500">Seuil d'alerte pour stock faible (en ml)</p>
+                <p class="mt-1 text-sm text-gray-500">Nombre minimum de poches disponibles avant alerte ({{ old('critical_level', $stock->critical_level) * 450 }}ml)</p>
             </div>
 
-            <!-- Aperçu du nouveau statut -->
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <!-- Informations sur la logique de poche -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div class="flex">
                     <div class="flex-shrink-0">
-                        <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                         </svg>
                     </div>
                     <div class="ml-3">
-                        <h3 class="text-sm font-medium text-yellow-800">Note importante</h3>
-                        <div class="mt-2 text-sm text-yellow-700">
-                            <p>Le statut du stock sera automatiquement recalculé après la mise à jour selon les nouvelles valeurs.</p>
+                        <h3 class="text-sm font-medium text-blue-800">Logique de Gestion par Poches</h3>
+                        <div class="mt-2 text-sm text-blue-700">
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Les statistiques sont calculées automatiquement à partir des poches réelles</li>
+                                <li>Le statut sera mis à jour automatiquement selon le nombre de poches disponibles</li>
+                                <li>Les alertes seront générées quand le stock atteint le seuil critique</li>
+                                <li>Chaque poche = 450ml de sang</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lien vers la gestion des poches -->
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-green-800">Gérer les Poches</h3>
+                        <div class="mt-2 text-sm text-green-700">
+                            <p>Pour voir et gérer les poches de ce groupe sanguin :</p>
+                            <a href="{{ route('admin.blood-bags.index', ['blood_type_id' => $stock->blood_type_id]) }}" class="inline-flex items-center mt-2 text-green-600 hover:text-green-500">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                </svg>
+                                Voir les poches {{ $stock->bloodType->name }}
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -125,4 +160,17 @@
         </form>
     </div>
 </div>
+
+<script>
+// Calcul automatique du volume en ml basé sur le nombre de poches
+document.getElementById('critical_level').addEventListener('input', function() {
+    const bags = parseInt(this.value) || 0;
+    const volumeMl = bags * 450;
+    const volumeL = (volumeMl / 1000).toFixed(1);
+
+    // Mettre à jour le texte d'aide
+    const helpText = this.parentNode.querySelector('p');
+    helpText.textContent = `Nombre minimum de poches disponibles avant alerte (${volumeMl}ml / ${volumeL}L)`;
+});
+</script>
 @endsection
