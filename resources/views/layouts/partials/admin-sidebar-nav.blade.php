@@ -73,6 +73,52 @@
         Stocks
     </a>
 
+    <!-- Poches de Sang -->
+    <div class="space-y-1">
+        <a href="{{ route('admin.blood-bags.index') }}"
+           class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ str_starts_with($currentRoute, 'admin.blood-bags') && !str_contains($currentRoute, 'movements') && !str_contains($currentRoute, 'reservations') && !str_contains($currentRoute, 'expiring') && !str_contains($currentRoute, 'statistics') ? 'bg-red-100 text-red-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+            <svg class="mr-3 h-6 w-6 {{ str_starts_with($currentRoute, 'admin.blood-bags') && !str_contains($currentRoute, 'movements') && !str_contains($currentRoute, 'reservations') && !str_contains($currentRoute, 'expiring') && !str_contains($currentRoute, 'statistics') ? 'text-red-500' : 'text-gray-400 group-hover:text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            Poches de Sang
+        </a>
+
+        <!-- Sous-menu des poches -->
+        <div class="ml-8 space-y-1">
+            <a href="{{ route('admin.blood-bags.reservations') }}"
+               class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ str_contains($currentRoute, 'admin.blood-bags.reservations') ? 'bg-red-50 text-red-700' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700' }}">
+                <svg class="mr-2 h-4 w-4 {{ str_contains($currentRoute, 'admin.blood-bags.reservations') ? 'text-red-400' : 'text-gray-400 group-hover:text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a4 4 0 118 0v4m-4 6v6m-4-6h8m-8 6h8" />
+                </svg>
+                Réservations
+            </a>
+
+            <a href="{{ route('admin.blood-bags.movements') }}"
+               class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ str_contains($currentRoute, 'admin.blood-bags.movements') ? 'bg-red-50 text-red-700' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700' }}">
+                <svg class="mr-2 h-4 w-4 {{ str_contains($currentRoute, 'admin.blood-bags.movements') ? 'text-red-400' : 'text-gray-400 group-hover:text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+                Mouvements
+            </a>
+
+            <a href="{{ route('admin.blood-bags.expiring-soon') }}"
+               class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ str_contains($currentRoute, 'admin.blood-bags.expiring') ? 'bg-red-50 text-red-700' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700' }}">
+                <svg class="mr-2 h-4 w-4 {{ str_contains($currentRoute, 'admin.blood-bags.expiring') ? 'text-red-400' : 'text-gray-400 group-hover:text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Expiration
+            </a>
+
+            <a href="{{ route('admin.blood-bags.statistics') }}"
+               class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ str_contains($currentRoute, 'admin.blood-bags.statistics') ? 'bg-red-50 text-red-700' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700' }}">
+                <svg class="mr-2 h-4 w-4 {{ str_contains($currentRoute, 'admin.blood-bags.statistics') ? 'text-red-400' : 'text-gray-400 group-hover:text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                Statistiques
+            </a>
+        </div>
+    </div>
+
     <!-- Utilisateurs -->
     <a href="{{ route('admin.users') }}"
        class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ $currentRoute === 'admin.users' ? 'bg-red-100 text-red-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">

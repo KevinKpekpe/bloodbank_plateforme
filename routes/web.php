@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\AppointmentController as AdminAppointmentControll
 use App\Http\Controllers\Admin\DonationController as AdminDonationController;
 use App\Http\Controllers\Admin\BankAdminController;
 use App\Http\Controllers\Admin\StockController;
+use App\Http\Controllers\Admin\BloodBagController;
 use App\Http\Controllers\SuperAdmin\BankController;
 use App\Http\Controllers\SuperAdmin\UserController;
 use App\Http\Controllers\NotificationController;
@@ -162,6 +163,21 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('stocks', StockController::class);
     Route::get('/stocks/create/multiple', [StockController::class, 'createMultiple'])->name('stocks.create-multiple');
     Route::post('/stocks/store/multiple', [StockController::class, 'storeMultiple'])->name('stocks.store-multiple');
+
+    // Gestion des poches de sang
+    Route::get('/blood-bags', [BloodBagController::class, 'index'])->name('blood-bags.index');
+    Route::get('/blood-bags/{bloodBag}', [BloodBagController::class, 'show'])->name('blood-bags.show');
+    Route::get('/blood-bags/{bloodBag}/reserve', [BloodBagController::class, 'reserve'])->name('blood-bags.reserve');
+    Route::post('/blood-bags/{bloodBag}/reserve', [BloodBagController::class, 'storeReservation'])->name('blood-bags.store-reservation');
+    Route::post('/blood-bags/{bloodBag}/transfuse', [BloodBagController::class, 'transfuse'])->name('blood-bags.transfuse');
+    Route::post('/blood-bags/{bloodBag}/cancel-reservation', [BloodBagController::class, 'cancelReservation'])->name('blood-bags.cancel-reservation');
+    Route::post('/blood-bags/{bloodBag}/discard', [BloodBagController::class, 'discard'])->name('blood-bags.discard');
+
+    // Historique et rapports des poches
+    Route::get('/blood-bags/movements', [BloodBagController::class, 'movements'])->name('blood-bags.movements');
+    Route::get('/blood-bags/reservations', [BloodBagController::class, 'reservations'])->name('blood-bags.reservations');
+    Route::get('/blood-bags/expiring-soon', [BloodBagController::class, 'expiringSoon'])->name('blood-bags.expiring-soon');
+    Route::get('/blood-bags/statistics', [BloodBagController::class, 'statistics'])->name('blood-bags.statistics');
 
     // Gestion des utilisateurs (donneurs de la banque)
     Route::get('/users', function () {
