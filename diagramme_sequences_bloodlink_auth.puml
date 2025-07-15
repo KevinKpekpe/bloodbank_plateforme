@@ -22,20 +22,25 @@ database "Base de Données" as DB
 
 note over Donor, Auth : **Étape 1: Connexion utilisateur**
 Donor -> UI: Accès à la page de connexion
-UI -> Auth: showLoginForm()
-Auth -> UI: Afficher formulaire de connexion
-UI -> Donor: Formulaire de connexion
+UI -> Auth: Demander formulaire de connexion
+Auth -> UI: Retourner formulaire de connexion
+UI -> Donor: Afficher formulaire de connexion
 
 note over Donor, Auth : **Étape 2: Validation des identifiants**
 Donor -> UI: Saisir identifiants (email/password)
-UI -> Auth: login(credentials)
+UI -> Auth: Envoyer identifiants
 Auth -> UserModel: Vérifier identifiants
-UserModel -> DB: SELECT * FROM users WHERE email = ? AND status = 'active'
-DB -> UserModel: Données utilisateur
-UserModel -> Auth: Utilisateur authentifié
+UserModel -> DB: Rechercher utilisateur
+DB --> UserModel: Retourner données utilisateur
+UserModel --> Auth: Retourner résultat authentification
 
-note over Auth, UI : **Étape 3: Redirection selon le rôle**
-Auth -> UI: Redirection vers dashboard
-UI -> Donor: Dashboard donneur
+alt Authentification réussie
+    Auth -> Auth: Vérifier rôle utilisateur
+    Auth -> UI: Rediriger vers dashboard approprié
+    UI -> Donor: Afficher dashboard
+else Authentification échouée
+    Auth -> UI: Retourner erreur
+    UI -> Donor: Afficher message d'erreur
+end
 
 @enduml

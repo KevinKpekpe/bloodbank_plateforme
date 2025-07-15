@@ -25,78 +25,72 @@ database "Base de Données" as DB
 
 note over BankAdmin, AppointmentCtrl : **Étape 1: Enregistrement du don**
 BankAdmin -> UI: Marquer rendez-vous comme terminé
-UI -> AppointmentCtrl: complete(appointmentId, volume)
+UI -> AppointmentCtrl: Envoyer données du don (volume)
 
-note over AppointmentCtrl, DonorModel : **Récupération des données donneur**
 AppointmentCtrl -> DonorModel: Récupérer groupe sanguin
-DonorModel -> DB: SELECT blood_type_id FROM donors WHERE id = ?
-DB -> DonorModel: Groupe sanguin
-DonorModel -> AppointmentCtrl: Groupe sanguin récupéré
+DonorModel -> DB: Rechercher groupe sanguin donneur
+DB --> DonorModel: Retourner groupe sanguin
+DonorModel --> AppointmentCtrl: Retourner groupe sanguin
 
-note over AppointmentCtrl, DonationModel : **Création du don**
-AppointmentCtrl -> DonationModel: create(donationData)
-DonationModel -> DB: INSERT INTO donations (appointment_id, donor_id, bank_id, blood_type_id, volume, quantity, status)
-DB -> DonationModel: Don créé
-DonationModel -> AppointmentCtrl: Don enregistré
+AppointmentCtrl -> DonationModel: Créer enregistrement de don
+DonationModel -> DB: Enregistrer don
+DB --> DonationModel: Confirmer création du don
+DonationModel --> AppointmentCtrl: Retourner don créé
 
-note over AppointmentCtrl, StockModel : **Mise à jour du stock**
 AppointmentCtrl -> StockModel: Mettre à jour stock
-StockModel -> DB: SELECT * FROM blood_stocks WHERE bank_id = ? AND blood_type_id = ?
-DB -> StockModel: Stock existant
-StockModel -> DB: UPDATE blood_stocks SET quantity = quantity + ?
-DB -> StockModel: Stock mis à jour
-StockModel -> AppointmentCtrl: Stock actualisé
+StockModel -> DB: Rechercher stock existant
+DB --> StockModel: Retourner stock actuel
+StockModel -> DB: Mettre à jour quantité
+DB --> StockModel: Confirmer mise à jour
+StockModel --> AppointmentCtrl: Retourner stock actualisé
 
-note over AppointmentCtrl, AppointmentModel : **Finalisation du rendez-vous**
-AppointmentCtrl -> AppointmentModel: update(status = 'completed')
-AppointmentModel -> DB: UPDATE appointments SET status = 'completed', completed_at = NOW()
-DB -> AppointmentModel: Rendez-vous terminé
-AppointmentModel -> AppointmentCtrl: Rendez-vous marqué comme terminé
-AppointmentCtrl -> UI: Redirection avec succès
-UI -> BankAdmin: Confirmation de don enregistré
+AppointmentCtrl -> AppointmentModel: Marquer rendez-vous terminé
+AppointmentModel -> DB: Mettre à jour statut rendez-vous
+DB --> AppointmentModel: Confirmer mise à jour
+AppointmentModel --> AppointmentCtrl: Retourner rendez-vous terminé
+AppointmentCtrl --> UI: Retourner succès
+UI -> BankAdmin: Afficher confirmation
 
 == **Processus de Gestion des Dons** ==
 
 note over BankAdmin, DonationCtrl : **Étape 1: Consultation des dons**
 BankAdmin -> UI: Accès à la gestion des dons
-UI -> DonationCtrl: index()
+UI -> DonationCtrl: Demander liste des dons
 DonationCtrl -> DonationModel: Récupérer dons de la banque
-DonationModel -> DB: SELECT * FROM donations WHERE bank_id = ? ORDER BY donation_date DESC
-DB -> DonationModel: Liste des dons
-DonationModel -> DonationCtrl: Dons récupérés
-DonationCtrl -> UI: Liste des dons
-UI -> BankAdmin: Interface de gestion des dons
+DonationModel -> DB: Rechercher dons
+DB --> DonationModel: Retourner liste des dons
+DonationModel --> DonationCtrl: Retourner dons récupérés
+DonationCtrl --> UI: Retourner liste des dons
+UI -> BankAdmin: Afficher interface de gestion
 
 note over BankAdmin, DonationCtrl : **Étape 2: Traitement d'un don**
 BankAdmin -> UI: Marquer don comme traité
-UI -> DonationCtrl: process(donationId)
-DonationCtrl -> DonationModel: update(status = 'processed')
-DonationModel -> DB: UPDATE donations SET status = 'processed', processed_at = NOW()
-DB -> DonationModel: Don traité
-DonationModel -> DonationCtrl: Traitement effectué
+UI -> DonationCtrl: Demander traitement du don
+DonationCtrl -> DonationModel: Mettre à jour statut
+DonationModel -> DB: Mettre à jour statut don
+DB --> DonationModel: Confirmer mise à jour
+DonationModel --> DonationCtrl: Retourner don traité
 
-note over DonationCtrl, NotifService : **Notification de traitement**
-DonationCtrl -> NotifService: donationProcessed(donation)
-NotifService -> DB: INSERT INTO notifications (user_id, title, message, type)
-DB -> NotifService: Notification créée
-NotifService -> DonationCtrl: Notification envoyée
-DonationCtrl -> UI: Redirection avec succès
-UI -> BankAdmin: Confirmation de traitement
+DonationCtrl -> NotifService: Envoyer notification de traitement
+NotifService -> DB: Enregistrer notification
+DB --> NotifService: Confirmer enregistrement
+NotifService --> DonationCtrl: Retourner notification envoyée
+DonationCtrl --> UI: Retourner succès
+UI -> BankAdmin: Afficher confirmation de traitement
 
 note over BankAdmin, DonationCtrl : **Étape 3: Mise à disposition**
 BankAdmin -> UI: Rendre don disponible
-UI -> DonationCtrl: makeAvailable(donationId)
-DonationCtrl -> DonationModel: update(status = 'available')
-DonationModel -> DB: UPDATE donations SET status = 'available', available_at = NOW()
-DB -> DonationModel: Don disponible
-DonationModel -> DonationCtrl: Disponibilité effectuée
+UI -> DonationCtrl: Demander mise à disposition
+DonationCtrl -> DonationModel: Mettre à jour statut disponible
+DonationModel -> DB: Mettre à jour statut
+DB --> DonationModel: Confirmer mise à jour
+DonationModel --> DonationCtrl: Retourner don disponible
 
-note over DonationCtrl, NotifService : **Notification de disponibilité**
-DonationCtrl -> NotifService: donationAvailable(donation)
-NotifService -> DB: INSERT INTO notifications (user_id, title, message, type)
-DB -> NotifService: Notification créée
-NotifService -> DonationCtrl: Notification envoyée
-DonationCtrl -> UI: Redirection avec succès
-UI -> BankAdmin: Confirmation de disponibilité
+DonationCtrl -> NotifService: Envoyer notification de disponibilité
+NotifService -> DB: Enregistrer notification
+DB --> NotifService: Confirmer enregistrement
+NotifService --> DonationCtrl: Retourner notification envoyée
+DonationCtrl --> UI: Retourner succès
+UI -> BankAdmin: Afficher confirmation de disponibilité
 
 @enduml

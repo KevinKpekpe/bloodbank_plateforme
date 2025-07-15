@@ -13,44 +13,34 @@ actor "Donneur" as Donor
 participant "Interface Web" as UI
 participant "BloodBankMapController" as MapCtrl
 participant "Bank Model" as BankModel
-participant "BloodStock Model" as StockModel
 
 database "Base de Données" as DB
 
 == **Processus de Consultation de la Carte** ==
 
-note over Donor, MapCtrl : **Étape 1: Affichage de la carte**
 Donor -> UI: Accès à la carte des banques
-UI -> MapCtrl: index()
-MapCtrl -> BankModel: Récupérer toutes les banques
-BankModel -> DB: SELECT * FROM banks WHERE status = 'active'
-DB -> BankModel: Liste des banques
-BankModel -> MapCtrl: Banques récupérées
-MapCtrl -> UI: Données pour la carte
-UI -> Donor: Carte interactive
+UI -> MapCtrl: Demander données de la carte
+MapCtrl -> BankModel: Récupérer banques actives
+BankModel -> DB: Rechercher banques
+DB --> BankModel: Retourner banques
+BankModel --> MapCtrl: Retourner données
+MapCtrl --> UI: Retourner données carte
+UI -> Donor: Afficher carte
 
-note over Donor, MapCtrl : **Étape 2: Recherche par proximité**
-Donor -> UI: Rechercher banques à proximité
-UI -> MapCtrl: nearby(latitude, longitude)
-MapCtrl -> BankModel: Calculer distances
-BankModel -> DB: SELECT *, ST_Distance_Sphere(point(longitude, latitude), point(?, ?)) as distance FROM banks WHERE status = 'active'
-DB -> BankModel: Toutes les banques avec distances
-BankModel -> MapCtrl: Banques avec distances
-MapCtrl -> UI: Banques triées par proximité
-UI -> Donor: Résultats de recherche
-
-note over Donor, MapCtrl : **Étape 3: Filtrage par groupe sanguin**
-Donor -> UI: Filtrer par groupe sanguin
-UI -> MapCtrl: filterByBloodType(bloodTypeId)
-MapCtrl -> StockModel: Récupérer stocks par groupe sanguin
-StockModel -> DB: SELECT * FROM blood_stocks WHERE blood_type_id = ? AND quantity > 0
-DB -> StockModel: Stocks du groupe sanguin
-StockModel -> MapCtrl: Stocks récupérés
-MapCtrl -> BankModel: Récupérer banques avec stock
-BankModel -> DB: SELECT * FROM banks WHERE id IN (SELECT bank_id FROM blood_stocks WHERE blood_type_id = ? AND quantity > 0)
-DB -> BankModel: Banques avec stock
-BankModel -> MapCtrl: Banques filtrées
-MapCtrl -> UI: Banques avec disponibilité
-UI -> Donor: Résultats filtrés
+alt Recherche par proximité
+    Donor -> UI: Saisir localisation
+    UI -> MapCtrl: Envoyer coordonnées
+    MapCtrl -> BankModel: Calculer distances
+    BankModel --> MapCtrl: Retourner banques triées
+    MapCtrl --> UI: Retourner résultats
+    UI -> Donor: Afficher banques proches
+else Filtrage par groupe sanguin
+    Donor -> UI: Sélectionner groupe sanguin
+    UI -> MapCtrl: Envoyer groupe sanguin
+    MapCtrl -> BankModel: Filtrer par disponibilité
+    BankModel --> MapCtrl: Retourner banques filtrées
+    MapCtrl --> UI: Retourner résultats
+    UI -> Donor: Afficher banques avec stock
+end
 
 @enduml
