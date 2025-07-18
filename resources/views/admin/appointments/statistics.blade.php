@@ -115,8 +115,8 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">{{ $appointment->donor->name }}</div>
-                                <div class="text-sm text-gray-500">{{ $appointment->donor->email }}</div>
+                                <div class="text-sm font-medium text-gray-900">{{ $appointment->donor->firstname }} {{ $appointment->donor->surname }}</div>
+                                <div class="text-sm text-gray-500">{{ $appointment->donor->user->email }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @switch($appointment->status)

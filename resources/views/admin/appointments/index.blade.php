@@ -112,16 +112,16 @@
                                         <div class="flex-shrink-0 h-10 w-10">
                                             <div class="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
                                                 <span class="text-sm font-medium text-red-600">
-                                                    {{ strtoupper(substr($appointment->donor->name, 0, 2)) }}
+                                                    {{ strtoupper(substr($appointment->donor->firstname, 0, 1) . substr($appointment->donor->surname, 0, 1)) }}
                                                 </span>
                                             </div>
                                         </div>
                                         <div class="ml-4">
                                             <div class="text-sm font-medium text-gray-900">
-                                                {{ $appointment->donor->name }}
+                                                {{ $appointment->donor->firstname }} {{ $appointment->donor->surname }}
                                             </div>
                                             <div class="text-sm text-gray-500">
-                                                {{ $appointment->donor->email }}
+                                                {{ $appointment->donor->user->email }}
                                             </div>
                                         </div>
                                     </div>
@@ -209,14 +209,16 @@
             </div>
         </div>
     @else
-        <div class="bg-white p-8 rounded-lg shadow-md text-center">
-            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a4 4 0 118 0v4m-4 6v6m-4-6h8m-8 6h8" />
+        <div class="bg-white shadow-md rounded-lg p-8 text-center">
+            <div class="text-gray-500">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                 </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">Aucun rendez-vous</h3>
+                <p class="mt-1 text-sm text-gray-500">
+                    Aucun rendez-vous ne correspond aux critères de recherche.
+                </p>
             </div>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun rendez-vous trouvé</h3>
-            <p class="text-gray-600">Aucun rendez-vous ne correspond aux critères de recherche.</p>
         </div>
     @endif
 </div>
@@ -259,37 +261,27 @@
             <form id="completeForm" method="POST">
                 @csrf
                 <div class="mb-4">
-                    <label for="blood_type_id" class="block text-sm font-medium text-gray-700 mb-2">
-                        Groupe sanguin *
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Groupe sanguin du donneur
                     </label>
-                    <select id="blood_type_id" name="blood_type_id" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500">
-                        <option value="">Sélectionnez le groupe sanguin</option>
-                        <option value="1">A+</option>
-                        <option value="2">A-</option>
-                        <option value="3">B+</option>
-                        <option value="4">B-</option>
-                        <option value="5">AB+</option>
-                        <option value="6">AB-</option>
-                        <option value="7">O+</option>
-                        <option value="8">O-</option>
-                    </select>
+                    <input type="text" id="blood_type" readonly
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100">
                 </div>
                 <div class="mb-4">
-                    <label for="volume" class="block text-sm font-medium text-gray-700 mb-2">
-                        Volume (L) *
+                    <label for="donation_volume" class="block text-sm font-medium text-gray-700 mb-2">
+                        Volume collecté (en litres) *
                     </label>
-                    <input type="number" id="volume" name="volume" step="0.1" min="0.3" max="0.5" required
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500"
-                           placeholder="0.45">
+                    <input type="number" id="donation_volume" name="donation_volume" step="0.01" min="0.1" max="1" required
+                           value="0.45"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div class="mb-4">
-                    <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
-                        Notes (optionnel)
+                    <label for="donation_notes" class="block text-sm font-medium text-gray-700 mb-2">
+                        Notes sur le don
                     </label>
-                    <textarea id="notes" name="notes" rows="2"
-                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500"
-                              placeholder="Observations, complications, etc."></textarea>
+                    <textarea id="donation_notes" name="donation_notes" rows="3"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="Notes sur la qualité du sang, etc..."></textarea>
                 </div>
                 <div class="flex justify-end space-x-4">
                     <button type="button" onclick="hideCompleteModal()"
@@ -297,7 +289,7 @@
                         Annuler
                     </button>
                     <button type="submit"
-                            class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                         Finaliser
                     </button>
                 </div>

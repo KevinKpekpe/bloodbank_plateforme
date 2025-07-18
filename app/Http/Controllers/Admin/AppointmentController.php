@@ -72,7 +72,7 @@ class AppointmentController extends Controller
             abort(403);
         }
 
-        $appointment->load(['donor', 'donation', 'donation.bloodType', 'donation.bloodBags']);
+        $appointment->load(['donor.user', 'donor.bloodType', 'donation', 'donation.bloodType', 'donation.bloodBags']);
 
         return view('admin.appointments.show', compact('appointment'));
     }

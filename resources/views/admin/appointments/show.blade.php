@@ -60,19 +60,19 @@
                     <dl class="space-y-3">
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Nom complet</dt>
-                            <dd class="text-sm text-gray-900">{{ $appointment->donor->name }}</dd>
+                            <dd class="text-sm text-gray-900">{{ $appointment->donor->firstname }} {{ $appointment->donor->surname }}</dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Email</dt>
-                            <dd class="text-sm text-gray-900">{{ $appointment->donor->email }}</dd>
+                            <dd class="text-sm text-gray-900">{{ $appointment->donor->user->email }}</dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Téléphone</dt>
-                            <dd class="text-sm text-gray-900">{{ $appointment->donor->phone }}</dd>
+                            <dd class="text-sm text-gray-900">{{ $appointment->donor->phone_number }}</dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Date de naissance</dt>
-                            <dd class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($appointment->donor->birth_date)->format('d/m/Y') }}</dd>
+                            <dd class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($appointment->donor->birthdate)->format('d/m/Y') }}</dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Groupe sanguin</dt>
@@ -248,20 +248,20 @@
                            class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100">
                 </div>
                 <div class="mb-4">
-                    <label for="volume" class="block text-sm font-medium text-gray-700 mb-2">
-                        Volume (L) *
+                    <label for="donation_volume" class="block text-sm font-medium text-gray-700 mb-2">
+                        Volume collecté (en litres) *
                     </label>
-                    <input type="number" id="volume" name="volume" step="0.1" min="0.3" max="0.5" required
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500"
-                           placeholder="0.45">
+                    <input type="number" id="donation_volume" name="donation_volume" step="0.01" min="0.1" max="1" required
+                           value="0.45"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div class="mb-4">
-                    <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
-                        Notes (optionnel)
+                    <label for="donation_notes" class="block text-sm font-medium text-gray-700 mb-2">
+                        Notes sur le don
                     </label>
-                    <textarea id="notes" name="notes" rows="2"
-                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500"
-                              placeholder="Observations, complications, etc."></textarea>
+                    <textarea id="donation_notes" name="donation_notes" rows="3"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="Notes sur la qualité du sang, etc..."></textarea>
                 </div>
                 <div class="flex justify-end space-x-4">
                     <button type="button" onclick="hideCompleteModal()"
@@ -269,7 +269,7 @@
                         Annuler
                     </button>
                     <button type="submit"
-                            class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                         Finaliser
                     </button>
                 </div>
