@@ -349,8 +349,7 @@ class StockHelper
                 'expired' => $stock->expired_bags ?? 0,
                 'discarded' => $stock->discarded_bags ?? 0,
                 'volume_l' => $stock->getTotalVolumeInLiters(),
-                'expiring_soon' => $stock->expiring_soon_bags,
-                'percentage' => $totals['count'] > 0 ? round(($stock->total_bags / $totals['count']) * 100, 1) : 0
+                'expiring_soon' => $stock->expiring_soon_bags
             ];
 
             // Ajouter aux totaux
@@ -362,6 +361,11 @@ class StockHelper
             $totals['discarded'] += $stock->discarded_bags ?? 0;
             $totals['volume_l'] += $stock->getTotalVolumeInLiters();
             $totals['expiring_soon'] += $stock->expiring_soon_bags;
+        }
+
+        // Calculer les pourcentages après avoir calculé tous les totaux
+        foreach ($byBloodType as $bloodTypeName => &$data) {
+            $data['percentage'] = $totals['count'] > 0 ? round(($data['count'] / $totals['count']) * 100, 1) : 0;
         }
 
         return [
