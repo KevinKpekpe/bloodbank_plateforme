@@ -20,12 +20,12 @@ class BloodTypeSeeder extends Seeder
             'AB+',
             'AB-',
             'O+',
-            'O-',
+            'O-'
         ];
 
         foreach ($bloodTypes as $type) {
             BloodType::create([
-                'name' => $type,
+                'name' => $type
             ]);
         }
     }

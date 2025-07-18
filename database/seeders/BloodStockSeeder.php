@@ -14,38 +14,91 @@ class BloodStockSeeder extends Seeder
      */
     public function run(): void
     {
-        // Récupérer toutes les banques
-        $banks = Bank::all();
+        // Récupérer les banques
+        $bank1 = Bank::where('name', 'Centre Hospitalier de Kinshasa')->first();
+        $bank2 = Bank::where('name', 'Hôpital Général de Kinshasa')->first();
+        $bank3 = Bank::where('name', 'Centre Médical de Ngaliema')->first();
 
-        // Récupérer tous les types de sang
-        $bloodTypes = BloodType::all();
+        // Récupérer les types de sang
+        $bloodTypes = BloodType::all()->keyBy('name');
 
-        // Pour chaque banque, créer des stocks pour tous les types de sang
-        foreach ($banks as $bank) {
-            foreach ($bloodTypes as $bloodType) {
-                // Générer des quantités aléatoires mais réalistes
-                $quantity = rand(5, 50); // Entre 5 et 50 unités
-                $criticalLevel = 10; // Seuil critique de 10 unités
+        // Stocks pour la Banque 1 - Centre Hospitalier de Kinshasa
+        foreach ($bloodTypes as $type) {
+            $quantity = $this->getRandomQuantity($type->name);
+            BloodStock::create([
+                'bank_id' => $bank1->id,
+                'blood_type_id' => $type->id,
+                'available_bags' => $quantity,
+                'reserved_bags' => rand(0, 2),
+                'transfused_bags' => rand(5, 15),
+                'expired_bags' => rand(1, 5),
+                'discarded_bags' => rand(0, 3),
+                'total_bags' => $quantity + rand(5, 20),
+                'critical_level' => 5,
+                'last_updated' => now(),
+            ]);
+        }
 
-                // Déterminer le statut basé sur la quantité
-                $status = 'normal';
-                if ($quantity <= ($criticalLevel * 0.5)) {
-                    $status = 'critical';
-                } elseif ($quantity <= $criticalLevel) {
-                    $status = 'low';
-                } elseif ($quantity > ($criticalLevel * 3)) {
-                    $status = 'high';
-                }
+        // Stocks pour la Banque 2 - Hôpital Général de Kinshasa
+        foreach ($bloodTypes as $type) {
+            $quantity = $this->getRandomQuantity($type->name);
+            BloodStock::create([
+                'bank_id' => $bank2->id,
+                'blood_type_id' => $type->id,
+                'available_bags' => $quantity,
+                'reserved_bags' => rand(0, 2),
+                'transfused_bags' => rand(5, 15),
+                'expired_bags' => rand(1, 5),
+                'discarded_bags' => rand(0, 3),
+                'total_bags' => $quantity + rand(5, 20),
+                'critical_level' => 5,
+                'last_updated' => now(),
+            ]);
+        }
 
-                BloodStock::create([
-                    'bank_id' => $bank->id,
-                    'blood_type_id' => $bloodType->id,
-                    'quantity' => $quantity,
-                    'critical_level' => $criticalLevel,
-                    'status' => $status,
-                    'last_updated' => now(),
-                ]);
-            }
+        // Stocks pour la Banque 3 - Centre Médical de Ngaliema
+        foreach ($bloodTypes as $type) {
+            $quantity = $this->getRandomQuantity($type->name);
+            BloodStock::create([
+                'bank_id' => $bank3->id,
+                'blood_type_id' => $type->id,
+                'available_bags' => $quantity,
+                'reserved_bags' => rand(0, 2),
+                'transfused_bags' => rand(5, 15),
+                'expired_bags' => rand(1, 5),
+                'discarded_bags' => rand(0, 3),
+                'total_bags' => $quantity + rand(5, 20),
+                'critical_level' => 5,
+                'last_updated' => now(),
+            ]);
+        }
+    }
+
+    /**
+     * Génère une quantité aléatoire basée sur le type de sang
+     */
+    private function getRandomQuantity($bloodType)
+    {
+        // Les types O+ et A+ sont plus courants
+        switch ($bloodType) {
+            case 'O+':
+                return rand(8, 15);
+            case 'A+':
+                return rand(6, 12);
+            case 'B+':
+                return rand(4, 8);
+            case 'AB+':
+                return rand(2, 5);
+            case 'O-':
+                return rand(3, 6);
+            case 'A-':
+                return rand(2, 4);
+            case 'B-':
+                return rand(1, 3);
+            case 'AB-':
+                return rand(1, 2);
+            default:
+                return rand(1, 5);
         }
     }
 }

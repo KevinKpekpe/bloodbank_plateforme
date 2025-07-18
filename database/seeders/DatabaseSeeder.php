@@ -14,11 +14,15 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             BloodTypeSeeder::class,      // 1. Types de sang
-            UserSeeder::class,           // 2. Utilisateurs de base
-            BankSeeder::class,           // 3. Banques de sang
-            BankAdminSeeder::class,      // 4. Relations admin-banque
+            UserSeeder::class,           // 2. Utilisateurs (1 superadmin, 3 admins, 4 donneurs)
+            BankSeeder::class,           // 3. Banques de sang (3 banques)
+            BankAdminSeeder::class,      // 4. Assigner les admins aux banques
             DonorSeeder::class,          // 5. Donneurs avec infos complètes
-            BloodStockSeeder::class,     // 6. Stocks de sang
+            AppointmentSeeder::class,    // 6. Rendez-vous
+            DonationSeeder::class,       // 7. Dons de sang
+            BloodBagSeeder::class,       // 8. Sacs de sang
+            BloodStockSeeder::class,     // 9. Stocks de sang
+            NotificationSeeder::class,   // 10. Notifications
         ]);
     }
 }
